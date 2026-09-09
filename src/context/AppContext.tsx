@@ -33,6 +33,14 @@ interface AppContextType {
   addContentPrefill: Partial<ContentItem> | null;
   openAddContent: (prefill?: Partial<ContentItem>) => void;
   
+  editingContent: ContentItem | null;
+  setEditingContent: (item: ContentItem | null) => void;
+  isEditContentOpen: boolean;
+  setIsEditContentOpen: (open: boolean) => void;
+  openEditContent: (item: ContentItem) => void;
+  closeEditContent: () => void;
+  duplicateContent: (item: ContentItem) => Promise<void>;
+  
   isFilterSheetOpen: boolean;
   setIsFilterSheetOpen: (open: boolean) => void;
   
@@ -86,18 +94,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentStoreId, setCurrentStoreIdState] = useState<string>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
-  const [viewMode, setViewMode] = useState<ViewMode>('landing');
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [viewMode, setViewModeState] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('reelflow_view_mode');
+    return (saved === 'app' || saved === 'landing') ? saved : 'landing';
+  });
+
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => {
+    const saved = localStorage.getItem('reelflow_active_tab');
+    return (saved as ActiveTab) || 'dashboard';
+  });
+
+  const setViewMode = (mode: ViewMode) => {
+    setViewModeState(mode);
+    localStorage.setItem('reelflow_view_mode', mode);
+  };
+
+  const setActiveTab = (tab: ActiveTab) => {
+    setActiveTabState(tab);
+    localStorage.setItem('reelflow_active_tab', tab);
+  };
+
+  // Initialize theme from localStorage if available
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  
+
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
   const [addContentPrefill, setAddContentPrefill] = useState<Partial<ContentItem> | null>(null);
+  
+  const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
+  const [isEditContentOpen, setIsEditContentOpen] = useState(false);
+  
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+
+  const openEditContent = (item: ContentItem) => {
+    setEditingContent(item);
+    setIsEditContentOpen(true);
+  };
+
+  const closeEditContent = () => {
+    setEditingContent(null);
+    setIsEditContentOpen(false);
+  };
+
+  const duplicateContent = async (item: ContentItem) => {
+    const { id, createdAt, updatedAt, ...rest } = item;
+    await dbService.addContent({
+      ...rest,
+      title: `${item.title} (Copy)`
+    });
+  };
 
   const enterApp = (targetTab?: ActiveTab) => {
     if (targetTab) {
@@ -110,8 +159,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setViewMode('landing');
   };
 
+
   // Firestore Realtime Subscriptions
   useEffect(() => {
+    // Apply initial theme attribute on mount
+    document.documentElement.setAttribute('data-theme', theme);
     setIsLoading(true);
     const unsubStores = dbService.subscribeStores((data) => setStores(data));
     const unsubCreators = dbService.subscribeCreators((data) => setCreators(data));
@@ -148,6 +200,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
+    localStorage.setItem('reelflow_theme', nextTheme);
     document.documentElement.setAttribute('data-theme', nextTheme);
   };
 
@@ -296,6 +349,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsAddContentOpen,
         addContentPrefill,
         openAddContent,
+        editingContent,
+        setEditingContent,
+        isEditContentOpen,
+        setIsEditContentOpen,
+        openEditContent,
+        closeEditContent,
+        duplicateContent,
         isFilterSheetOpen,
         setIsFilterSheetOpen,
         isNotificationsOpen,

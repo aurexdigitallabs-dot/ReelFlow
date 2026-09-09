@@ -3,8 +3,12 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { AddStoreModal } from '../stores/AddStoreModal';
 import { LoginModal } from '../auth/LoginModal';
+import { NotificationDrawer } from '../notifications/NotificationDrawer';
+import { SingleAvatar } from '../common/CreatorAvatar';
 import { Plus, Bell, Store, Moon, Sun, Database, Sparkles, User, ShieldCheck } from 'lucide-react';
+// ThemeToggle import removed
 import { ReelFlowLogo } from '../common/ReelFlowLogo';
+import { useUI } from '../../context/UIContext';
 
 export const Header: React.FC = () => {
   const {
@@ -12,6 +16,7 @@ export const Header: React.FC = () => {
     currentStoreId,
     setCurrentStoreId,
     notifications,
+    isNotificationsOpen,
     setIsNotificationsOpen,
     openAddContent,
     theme,
@@ -20,6 +25,7 @@ export const Header: React.FC = () => {
   } = useApp();
 
   const { canAddStore, userProfile, userRole, assignedStoreIds } = useAuth();
+  const { showAlert } = useUI();
 
   const [isAddStoreOpen, setIsAddStoreOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -28,7 +34,7 @@ export const Header: React.FC = () => {
 
   // Filter stores available to current user based on assignedStoreIds
   const visibleStores = stores.filter((s) => {
-    if (userRole === 'super_admin' || !assignedStoreIds) return true;
+    if (userRole === 'super_admin' || (userRole as string) === 'super' || !assignedStoreIds) return true;
     return assignedStoreIds.includes(s.id);
   });
 
@@ -48,7 +54,7 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-2.5 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-50 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-2.5 flex items-center justify-between gap-3">
         {/* Brand & Store Selector */}
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
           <button
@@ -60,8 +66,8 @@ export const Header: React.FC = () => {
             <ReelFlowLogo size="sm" showSubtitle={false} />
           </button>
 
-          {/* Store Selector Dropdown */}
-          <div className="relative flex items-center shrink">
+          {/* Store Selector Dropdown (Desktop & Tablet) */}
+          <div className="relative hidden sm:flex items-center shrink">
             <Store className="w-3.5 h-3.5 text-indigo-400 absolute left-2 pointer-events-none" />
             <select
               value={currentStoreId}
@@ -70,7 +76,7 @@ export const Header: React.FC = () => {
                   if (canAddStore) {
                     setIsAddStoreOpen(true);
                   } else {
-                    alert('Only Super Admins are authorized to add new brands/stores.');
+                    showAlert('Access Denied', 'Only Super Admins are authorized to add new brands/stores.', 'error');
                   }
                 } else {
                   setCurrentStoreId(e.target.value);
@@ -92,33 +98,49 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-200 hover:bg-slate-900 rounded-xl transition-colors shrink-0"
-            title="Toggle Dark / Light Theme"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-indigo-400" />
-            )}
-          </button>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          {/* ThemeToggle removed */}
 
-          {/* Notifications Icon */}
-          <button
-            type="button"
-            onClick={() => setIsNotificationsOpen(true)}
-            className="relative p-1.5 sm:p-2 text-gray-300 hover:text-white hover:bg-slate-900 rounded-xl transition-colors shrink-0"
-            title="View Alerts & Reminders"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-950 animate-pulse" />
-            )}
-          </button>
+          {/* Notifications Icon & Attached Floating Popover */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="relative p-1.5 sm:p-2 text-gray-300 hover:text-white hover:bg-slate-900 rounded-xl transition-colors shrink-0"
+              title="View Alerts & Reminders"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-950 animate-pulse" />
+              )}
+            </button>
+
+            <NotificationDrawer />
+          </div>
+
+          {/* User Profile Button & Attached Popover */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsLoginOpen(!isLoginOpen)}
+              className="flex items-center gap-1.5 px-2 py-1 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-semibold text-gray-200 transition-colors cursor-pointer"
+              title="Manage Profile & Roles"
+            >
+              <SingleAvatar
+                name={userProfile?.displayName || userProfile?.email?.split('@')[0] || 'User'}
+                profileImage={userProfile?.photoURL}
+                sizeClass="w-5 h-5 text-[10px]"
+              />
+              <span className="hidden md:inline truncate max-w-[80px]">
+                {userProfile?.displayName || userProfile?.email?.split('@')[0] || 'Sign In'}
+              </span>
+              <span className={`badge px-1.5 py-0.5 text-[9px] border shrink-0 ${roleBadgeStyle}`}>
+                {roleName}
+              </span>
+            </button>
+
+            <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} position="down" />
+          </div>
 
           {/* + Add Content Header Button */}
           <button
@@ -134,9 +156,6 @@ export const Header: React.FC = () => {
 
       {/* Modal to add new Store/Brand */}
       <AddStoreModal isOpen={isAddStoreOpen} onClose={() => setIsAddStoreOpen(false)} />
-
-      {/* Login & Auth Persona Modal */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>
   );
 };
