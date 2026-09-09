@@ -2,14 +2,15 @@ import React from 'react';
 import { Creator } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { CreatorAvatar } from '../common/CreatorAvatar';
-import { Phone, ChevronRight, Video, CheckCircle2, Clock, AtSign } from 'lucide-react';
+import { Phone, ChevronRight, Video, CheckCircle2, Clock, AtSign, Edit2 } from 'lucide-react';
 
 interface CreatorCardProps {
   creator: Creator;
   onSelect: (creatorId: string) => void;
+  onEdit?: (creator: Creator) => void;
 }
 
-export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect }) => {
+export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onEdit }) => {
   const { content } = useApp();
 
   // Derived content counts for this creator
@@ -23,9 +24,9 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect }) =
   return (
     <div
       onClick={() => onSelect(creator.id)}
-      className="glass-panel p-4 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all group"
+      className="glass-panel p-4 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all group relative"
     >
-      {/* Top Header: Avatar, Name, Handle, Status */}
+      {/* Top Header: Avatar, Name, Handle, Status, Edit */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <CreatorAvatar creator={creator} size="lg" />
@@ -46,16 +47,32 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect }) =
           </div>
         </div>
 
-        {/* Status Badge */}
-        <span
-          className={`badge px-2 py-0.5 text-[10px] ${
-            creator.status === 'Active'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-              : 'bg-slate-800 text-gray-400 border border-slate-700'
-          }`}
-        >
-          {creator.status}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(creator);
+              }}
+              className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Edit creator profile"
+            >
+              <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+            </button>
+          )}
+
+          {/* Status Badge */}
+          <span
+            className={`badge px-2 py-0.5 text-[10px] ${
+              creator.status === 'Active'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                : 'bg-slate-800 text-gray-400 border border-slate-700'
+            }`}
+          >
+            {creator.status}
+          </span>
+        </div>
       </div>
 
       {/* Bio excerpt if available */}

@@ -3,17 +3,18 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPageView } from './components/views/LandingPageView';
-
+import { UIProvider } from './context/UIContext';
+import { GlobalDialogs } from './components/common/GlobalDialogs';
 function AppContainer() {
   const { viewMode, activeTab, setViewMode } = useApp();
-  const { isAuthorized } = useAuth();
+  const { isAuthorized, isLoadingAuth } = useAuth();
 
   useEffect(() => {
-    // Force landing view if user is unassigned or not authorized
-    if (viewMode === 'app' && !isAuthorized) {
+    // Only redirect if auth loading has completed and user is explicitly unauthorized
+    if (!isLoadingAuth && viewMode === 'app' && !isAuthorized) {
       setViewMode('landing');
     }
-  }, [viewMode, isAuthorized, setViewMode]);
+  }, [viewMode, isAuthorized, isLoadingAuth, setViewMode]);
 
   useEffect(() => {
     if (viewMode === 'landing' || !isAuthorized) {
@@ -51,9 +52,12 @@ function MainAppShell() {
 
 export function App() {
   return (
-    <AppProvider>
-      <MainAppShell />
-    </AppProvider>
+    <UIProvider>
+      <AppProvider>
+        <MainAppShell />
+        <GlobalDialogs />
+      </AppProvider>
+    </UIProvider>
   );
 }
 

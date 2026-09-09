@@ -21,12 +21,13 @@ import {
   Globe,
   AlertTriangle
 } from 'lucide-react';
-
 import { ReelFlowLogo } from '../common/ReelFlowLogo';
+import { useUI } from '../../context/UIContext';
 
 export const LandingPageView: React.FC = () => {
   const { enterApp, content, creators, stores } = useApp();
   const { userProfile, userRole, signInWithGoogle, logout, isLoggedIn, promoteToSuperAdmin } = useAuth();
+  const { showAlert } = useUI();
 
   const readyCount = content.filter((i) => i.postStatus === 'Ready').length;
   const shotCount = content.filter((i) => i.shootStatus === 'Shot').length;
@@ -74,7 +75,7 @@ export const LandingPageView: React.FC = () => {
 
   const handleEnterDashboard = () => {
     if (!isLoggedIn || userProfile?.role === 'unassigned') {
-      alert('Your Google account is not onboarded as an authorized Creator or Admin yet. Please contact Aurex Digitals administration.');
+      showAlert('Access Denied', 'Your Google account is not onboarded as an authorized Creator or Admin yet. Please contact Aurex Digitals administration.', 'error');
       return;
     }
     if (userRole === 'creator') {

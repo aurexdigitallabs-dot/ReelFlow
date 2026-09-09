@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { calculateOverviewMetrics } from '../../utils/analyticsUtils';
 import { getTodayString, getWeekDays, formatDate } from '../../utils/dateUtils';
 import { ContentCard } from '../content/ContentCard';
+import { StatCardSkeleton, ListSkeleton, HeaderSkeleton } from '../common/Skeletons';
 import {
   Film,
   Camera,
@@ -13,18 +14,26 @@ import {
   Calendar as CalendarIcon,
   AlertTriangle,
   Plus,
-  ArrowRight
+  ArrowRight,
+  List,
+  LayoutGrid,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
+import { Loader } from '../common/Loader';
 
 export const DashboardView: React.FC = () => {
   const {
     filteredContent,
     openAddContent,
     setActiveTab,
-    currentStore
+    currentStore,
+    isLoading
   } = useApp();
 
   const [overviewRange, setOverviewRange] = useState<'weekly' | 'monthly'>('weekly');
+  const [recentViewMode, setRecentViewMode] = useState<'list' | 'grid'>('list');
+  const [showAllRecent, setShowAllRecent] = useState(false);
 
   const todayStr = getTodayString();
   const metrics = calculateOverviewMetrics(filteredContent);
@@ -54,16 +63,42 @@ export const DashboardView: React.FC = () => {
     return { ...day, count };
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 animate-fade-in">
+        <HeaderSkeleton />
+        
+        <section className="flex flex-col gap-2.5">
+          <div className="w-48 h-4 bg-slate-800/50 rounded animate-pulse"></div>
+          <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-6 gap-2.5">
+            {Array(6).fill(0).map((_, i) => <StatCardSkeleton key={i} />)}
+          </div>
+        </section>
+        
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3">
+             <div className="w-32 h-5 bg-slate-800/50 rounded mb-2 animate-pulse"></div>
+             {Array(2).fill(0).map((_, i) => <ListSkeleton key={i} />)}
+          </div>
+          <div className="flex flex-col gap-3">
+             <div className="w-32 h-5 bg-slate-800/50 rounded mb-2 animate-pulse"></div>
+             {Array(2).fill(0).map((_, i) => <ListSkeleton key={i} />)}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Top Banner Context */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-r from-slate-900 via-indigo-950/50 to-slate-900 border border-slate-800 rounded-2xl shadow-sm">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-r from-slate-900 via-indigo-950/50 to-slate-900 border border-slate-800/90 rounded-2xl shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-base font-extrabold text-gray-100">
+            <h2 className="text-base font-extrabold text-gray-100">
               {currentStore ? currentStore.name : 'Agency Operations Dashboard'}
-            </span>
-            <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+            </h2>
+            <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold">
               Live
             </span>
           </div>
@@ -75,11 +110,11 @@ export const DashboardView: React.FC = () => {
         <button
           type="button"
           onClick={() => openAddContent()}
-          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 shrink-0 transition-transform active:scale-95"
+          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 shrink-0 transition-transform active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Quick Add Content
         </button>
-      </div>
+      </header>
 
       {/* Overdue Warning Alert Box if any items are overdue */}
       {(overdueShoots.length > 0 || overduePosts.length > 0) && (
@@ -94,7 +129,7 @@ export const DashboardView: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('pending')}
-              className="mt-2 text-indigo-400 hover:underline font-bold text-[11px] flex items-center gap-1"
+              className="mt-2 text-indigo-400 hover:underline font-bold text-[11px] flex items-center gap-1 cursor-pointer"
             >
               Resolve Pending Items in Hub <ArrowRight className="w-3 h-3" />
             </button>
@@ -103,8 +138,8 @@ export const DashboardView: React.FC = () => {
       )}
 
       {/* KPI Cards Section */}
-      <div>
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+      <section className="flex flex-col gap-2.5">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
           Production Pipeline Metrics
         </h3>
         <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-6 gap-2.5">
@@ -156,11 +191,11 @@ export const DashboardView: React.FC = () => {
             <span className="text-xl font-extrabold text-purple-400 mt-1">{metrics.posted}</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Today's Content Section (Requirement 6) */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
+      {/* Today's Content Section */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-gray-100 flex items-center gap-1.5">
               <CalendarIcon className="w-4 h-4 text-indigo-400" /> Today's Content Action Hub
@@ -170,16 +205,16 @@ export const DashboardView: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('calendar')}
-            className="text-xs text-indigo-400 hover:underline font-semibold flex items-center gap-1"
+            className="text-xs text-indigo-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
           >
             View Calendar <ArrowRight className="w-3 h-3" />
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Shoot Today */}
-          <div className="glass-panel p-4 rounded-2xl flex flex-col gap-3 border-amber-500/20 bg-gradient-to-b from-slate-900 to-amber-950/10">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          {/* Shoot Today - Clean Section Container (No Cardception) */}
+          <div className="p-4 rounded-2xl flex flex-col gap-3 border border-amber-500/20 bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
                 <Camera className="w-4 h-4" /> Shoot Today ({shootsToday.length})
               </span>
@@ -191,17 +226,17 @@ export const DashboardView: React.FC = () => {
                 No content scheduled for shooting today.
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {shootsToday.map((item) => (
-                  <ContentCard key={`today-shoot-${item.id}`} content={item} />
+                  <ContentCard key={`today-shoot-${item.id}`} content={item} variant="list" />
                 ))}
               </div>
             )}
           </div>
 
-          {/* Post Today */}
-          <div className="glass-panel p-4 rounded-2xl flex flex-col gap-3 border-indigo-500/20 bg-gradient-to-b from-slate-900 to-indigo-950/10">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          {/* Post Today - Clean Section Container (No Cardception) */}
+          <div className="p-4 rounded-2xl flex flex-col gap-3 border border-indigo-500/20 bg-slate-900/40">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5 uppercase tracking-wider">
                 <Send className="w-4 h-4" /> Post Today ({postsToday.length})
               </span>
@@ -213,18 +248,108 @@ export const DashboardView: React.FC = () => {
                 No content scheduled for posting today.
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {postsToday.map((item) => (
-                  <ContentCard key={`today-post-${item.id}`} content={item} />
+                  <ContentCard key={`today-post-${item.id}`} content={item} variant="list" />
                 ))}
               </div>
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Weekly Overview Section (Requirement 7) */}
-      <div className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+      {/* Recent & Upcoming Content Queue */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 className="text-sm font-bold text-gray-100 flex items-center gap-1.5">
+              <Film className="w-4 h-4 text-indigo-400" /> Recent & Upcoming Content
+            </h3>
+            <p className="text-[11px] text-gray-400">All recent and scheduled content items in the pipeline</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle: List | Grid */}
+            <div className="flex items-center p-0.5 bg-slate-950 rounded-xl border border-slate-800 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setRecentViewMode('list')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  recentViewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
+                }`}
+                title="List View"
+              >
+                <List className="w-3.5 h-3.5" /> List
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecentViewMode('grid')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  recentViewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" /> Grid
+              </button>
+            </div>
+
+            {/* Expand List / Show All Button */}
+            <button
+              type="button"
+              onClick={() => setShowAllRecent(!showAllRecent)}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-indigo-300 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 rounded-xl transition-all cursor-pointer"
+            >
+              {showAllRecent ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5" /> Show Top 5
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5" /> Expand All ({filteredContent.length})
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {filteredContent.length === 0 ? (
+          <div className="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500 flex flex-col items-center gap-2">
+            <Film className="w-8 h-8 text-gray-600" />
+            <span>No content created yet. Click "+ Quick Add Content" above to schedule your first post!</span>
+          </div>
+        ) : recentViewMode === 'list' ? (
+          <div className="flex flex-col gap-2.5">
+            {(showAllRecent
+              ? filteredContent
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+              : filteredContent
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+                  .slice(0, 5)
+            ).map((item) => (
+              <ContentCard key={`recent-${item.id}`} content={item} variant="list" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(showAllRecent
+              ? filteredContent
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+              : filteredContent
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+                  .slice(0, 6)
+            ).map((item) => (
+              <ContentCard key={`recent-${item.id}`} content={item} variant="card" />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Weekly Overview Section */}
+      <section className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
           <div>
             <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
@@ -238,7 +363,7 @@ export const DashboardView: React.FC = () => {
             <button
               type="button"
               onClick={() => setOverviewRange('weekly')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                 overviewRange === 'weekly' ? 'bg-indigo-600 text-white' : 'text-gray-400'
               }`}
             >
@@ -247,7 +372,7 @@ export const DashboardView: React.FC = () => {
             <button
               type="button"
               onClick={() => setOverviewRange('monthly')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                 overviewRange === 'monthly' ? 'bg-indigo-600 text-white' : 'text-gray-400'
               }`}
             >
@@ -274,7 +399,8 @@ export const DashboardView: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 };
+

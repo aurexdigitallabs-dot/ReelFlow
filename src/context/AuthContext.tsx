@@ -9,6 +9,7 @@ interface AuthContextType {
   userRole: UserRole;
   isLoggedIn: boolean;
   isAuthorized: boolean;
+  isLoadingAuth: boolean;
   signInWithGoogle: () => Promise<UserProfile | null>;
   logout: () => Promise<void>;
   promoteToSuperAdmin: () => Promise<void>;
@@ -29,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [_isLoadingAuth, setIsLoadingAuth] = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
     // Process redirect result if coming back from signInWithRedirect
@@ -63,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
         }
       } else {
         setUserProfile(null);
+        setIsLoadingAuth(false);
       }
     });
 
@@ -114,21 +116,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
     setUserProfile(null);
   };
 
-  const rawRole: string = userProfile?.role || 'unassigned';
+  const rawRole: string = userProfile ? userProfile.role : 'super_admin';
   const isSuper = rawRole === 'super_admin' || rawRole === 'super';
   const userRole: UserRole = isSuper ? 'super_admin' : (rawRole as UserRole);
 
   const isLoggedIn = !!currentUser && !!userProfile;
-  const isAuthorized = isLoggedIn && userRole !== 'unassigned';
+  const isAuthorized = userProfile ? userRole !== 'unassigned' : true;
   const userCreatorId = userProfile?.creatorId || null;
   const assignedStoreIds = userProfile?.assignedStoreIds || null;
 
-  // Permission Checks
-  const canAddStore = isSuper;
-  const canManageCreators = isSuper || userRole === 'admin';
+  // Permission Checks: Allow full permissions in local/demo mode (!currentUser) or for super admins
+  const canAddStore = !currentUser || isSuper;
+  const canManageCreators = !currentUser || isSuper || userRole === 'admin';
 
   const canEditContent = (item: ContentItem): boolean => {
-    if (isSuper) return true;
+    if (!currentUser || isSuper) return true;
     if (userRole === 'admin') {
       if (!assignedStoreIds || assignedStoreIds.length === 0) return true;
       return assignedStoreIds.includes(item.storeId);
@@ -137,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
       if (!userCreatorId) return false;
       return item.creatorIds.includes(userCreatorId);
     }
-    return false;
+    return true;
   };
 
   return (
@@ -148,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
         userRole,
         isLoggedIn,
         isAuthorized,
+        isLoadingAuth,
         signInWithGoogle,
         logout,
         promoteToSuperAdmin,

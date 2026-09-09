@@ -56,6 +56,40 @@
   --text-muted: #94a3b8;
 }
 
+/* Light theme overrides for dark Tailwind utilities */
+[data-theme="light"] .bg-slate-800,
+[data-theme="light"] .bg-slate-900,
+[data-theme="light"] .bg-slate-950,
+[data-theme="light"] .bg-slate-800\/50,
+[data-theme="light"] .bg-slate-800\/60,
+[data-theme="light"] .bg-slate-900\/60,
+[data-theme="light"] .bg-slate-800\/40,
+[data-theme="light"] .bg-slate-800\/30,
+[data-theme="light"] .bg-slate-900\/40,
+[data-theme="light"] .bg-slate-800\/50 {
+  background-color: var(--bg-secondary) !important;
+}
+[data-theme="light"] .text-gray-400,
+[data-theme="light"] .text-gray-300,
+[data-theme="light"] .text-gray-500,
+[data-theme="light"] .text-gray-600,
+[data-theme="light"] .text-gray-100,
+[data-theme="light"] .text-gray-200 {
+  color: var(--text-primary) !important;
+}
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-600 {
+  border-color: var(--border-color) !important;
+}
+[data-theme="light"] .bg-indigo-600,
+[data-theme="light"] .bg-purple-600,
+[data-theme="light"] .bg-emerald-400,
+[data-theme="light"] .bg-amber-400 {
+  background-color: var(--accent-primary) !important;
+}
+/* End of light theme overrides */
+
 * {
   box-sizing: border-box;
   margin: 0;

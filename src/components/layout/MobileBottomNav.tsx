@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { ActiveTab } from '../../types';
-import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X } from 'lucide-react';
+import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X, Building2 } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
-  const { activeTab, setActiveTab, openAddContent, content } = useApp();
+  const { activeTab, setActiveTab, openAddContent, content, stores, currentStoreId, setCurrentStoreId } = useApp();
   const { userRole } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
@@ -40,7 +40,30 @@ export const MobileBottomNav: React.FC = () => {
               </button>
             </div>
 
+            {/* Mobile Store / Brand Selector */}
+            <div className="flex flex-col gap-1.5 pt-1 border-b border-slate-800 pb-3">
+              <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-indigo-400" /> Active Brand / Store
+              </span>
+              <select
+                value={currentStoreId}
+                onChange={(e) => {
+                  setCurrentStoreId(e.target.value);
+                  setIsMoreOpen(false);
+                }}
+                className="w-full px-3 py-2 text-xs font-semibold bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                <option value="all">All Brands ({stores.length})</option>
+                {stores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-3 gap-2 text-xs">
+
               <button
                 type="button"
                 onClick={() => {

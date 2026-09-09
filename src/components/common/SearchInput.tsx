@@ -5,15 +5,17 @@ interface SearchInputProps {
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
+  className?: string;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = ({
   value,
   onChange,
-  placeholder = 'Search content, concept, creator...'
+  placeholder = 'Search content, concept, creator...',
+  className = ''
 }) => {
   return (
-    <div className="relative flex-1 min-w-[200px]">
+    <div className={`relative flex-1 min-w-[200px] ${className}`}>
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
         <Search className="w-4 h-4" />
       </div>

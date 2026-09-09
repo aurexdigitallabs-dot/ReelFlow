@@ -59,13 +59,13 @@ export const CreatorDashboardView: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Creator Profile Header */}
-      <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <CreatorAvatar creator={creator as any} size="lg" />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-extrabold text-gray-100">{creator.name}'s Creator Dashboard</h2>
-              <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+              <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold">
                 Assigned Tasks Only
               </span>
             </div>
@@ -85,7 +85,7 @@ export const CreatorDashboardView: React.FC = () => {
             <span className="text-base font-extrabold text-emerald-400">{completionRate}%</span>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Overdue Alert if any */}
       {(myOverdueShoots.length > 0 || myOverduePosts.length > 0) && (
@@ -102,7 +102,7 @@ export const CreatorDashboardView: React.FC = () => {
       )}
 
       {/* Creator KPI Metrics */}
-      <div className="grid grid-cols-2 xs:grid-cols-5 gap-2.5">
+      <section className="grid grid-cols-2 xs:grid-cols-5 gap-2.5">
         <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
           <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
             <Film className="w-3 h-3 text-indigo-400" /> My Total
@@ -137,13 +137,13 @@ export const CreatorDashboardView: React.FC = () => {
           </span>
           <span className="text-xl font-extrabold text-purple-400 mt-1">{totalPosted}</span>
         </div>
-      </div>
+      </section>
 
       {/* My Today's Tasks */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* My Shoots Today */}
-        <div className="glass-panel p-4 rounded-2xl flex flex-col gap-3 border-amber-500/20 bg-gradient-to-b from-slate-900 to-amber-950/10">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="p-4 rounded-2xl flex flex-col gap-3 border border-amber-500/20 bg-slate-900/40">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Camera className="w-4 h-4" /> My Shoots Today ({myShootsToday.length})
             </span>
@@ -164,8 +164,8 @@ export const CreatorDashboardView: React.FC = () => {
         </div>
 
         {/* My Posts Today */}
-        <div className="glass-panel p-4 rounded-2xl flex flex-col gap-3 border-indigo-500/20 bg-gradient-to-b from-slate-900 to-indigo-950/10">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="p-4 rounded-2xl flex flex-col gap-3 border border-indigo-500/20 bg-slate-900/40">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Send className="w-4 h-4" /> My Posts Scheduled Today ({myPostsToday.length})
             </span>
@@ -184,10 +184,10 @@ export const CreatorDashboardView: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* My All Assigned Content */}
-      <div className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3">
         <h3 className="text-sm font-bold text-gray-100 flex items-center gap-2">
           <Film className="w-4 h-4 text-indigo-400" /> All Content Assigned to Me ({myAssignedContent.length})
         </h3>
@@ -202,7 +202,7 @@ export const CreatorDashboardView: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

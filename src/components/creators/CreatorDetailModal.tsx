@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { BottomSheet } from '../common/BottomSheet';
 import { ContentCard } from '../content/ContentCard';
 import { CreatorAvatar } from '../common/CreatorAvatar';
-import { Phone, Mail, AtSign, Calendar, Tag } from 'lucide-react';
+import { EditCreatorModal } from './EditCreatorModal';
+import { Phone, Mail, AtSign, Calendar, Tag, Edit2 } from 'lucide-react';
 
 interface CreatorDetailModalProps {
   creatorId: string;
@@ -13,6 +14,7 @@ interface CreatorDetailModalProps {
 export const CreatorDetailModal: React.FC<CreatorDetailModalProps> = ({ creatorId, onClose }) => {
   const { creators, content, categories } = useApp();
   const [activeSubTab, setActiveSubTab] = useState<'assignments' | 'shoots' | 'posts' | 'completed'>('assignments');
+  const [isEditing, setIsEditing] = useState(false);
 
   const creator = creators.find((c) => c.id === creatorId);
   if (!creator) return null;
@@ -103,16 +105,31 @@ export const CreatorDetailModal: React.FC<CreatorDetailModalProps> = ({ creatorI
             </div>
           </div>
 
-          <span
-            className={`badge px-2.5 py-1 text-xs font-semibold ${
-              creator.status === 'Active'
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'bg-slate-800 text-gray-400'
-            }`}
-          >
-            {creator.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <Edit2 className="w-3.5 h-3.5" /> Edit Profile
+            </button>
+            <span
+              className={`badge px-2.5 py-1 text-xs font-semibold ${
+                creator.status === 'Active'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-slate-800 text-gray-400'
+              }`}
+            >
+              {creator.status}
+            </span>
+          </div>
         </div>
+
+        <EditCreatorModal
+          creator={creator}
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+        />
 
         {/* Weekly & Monthly Analytics Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

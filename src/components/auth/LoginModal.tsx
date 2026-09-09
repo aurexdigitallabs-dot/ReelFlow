@@ -1,20 +1,42 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BottomSheet } from '../common/BottomSheet';
-import { ShieldCheck, User, LogOut, CheckCircle2, Database } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { SingleAvatar } from '../common/CreatorAvatar';
+import { ShieldCheck, User, LogOut, X, Sparkles } from 'lucide-react';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  position?: 'up' | 'down';
 }
 
-import { useApp } from '../../context/AppContext';
-
-export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, position = 'down' }) => {
   const { userProfile, userRole, signInWithGoogle, logout, isLoggedIn } = useAuth();
   const { enterApp } = useApp();
+  const popoverRef = useRef<HTMLDivElement>(null);
 
-  const isSuper = userRole === 'super_admin' || (userRole as string) === 'super';
+  // Close on Escape or Outside click
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const roleLabelMap: Record<string, { label: string; color: string; desc: string }> = {
     super_admin: {
@@ -41,43 +63,59 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   const currentRoleStyle = roleLabelMap[userRole] || roleLabelMap.super_admin;
 
-  return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Account & Profile"
-      subtitle="ReelFlow User Account"
-    >
-      <div className="flex flex-col gap-5 text-xs">
-        {/* Active Account Info if logged in */}
-        {isLoggedIn && userProfile ? (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-slate-800 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                {userProfile.photoURL ? (
-                  <img
-                    src={userProfile.photoURL}
-                    alt={userProfile.displayName}
-                    className="w-10 h-10 rounded-full border border-indigo-500/30 object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-300 flex items-center justify-center font-extrabold text-base shrink-0">
-                    <User className="w-5 h-5 text-indigo-300" />
-                  </div>
-                )}
-                <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-gray-100 text-sm">{userProfile.displayName}</span>
-                  <span className="text-[11px] text-gray-400 truncate">{userProfile.email}</span>
-                </div>
-              </div>
+  const popoverPosClass =
+    position === 'up'
+      ? 'bottom-full mb-2 left-0'
+      : 'right-0 top-full mt-2';
 
-              <span className={`badge px-2.5 py-1 text-[11px] border ${currentRoleStyle.color}`}>
+  return (
+    <>
+      {/* Invisible backdrop to capture click-outside */}
+      <div className="fixed inset-0 z-[80]" onClick={onClose} />
+
+      {/* Floating Popover Menu attached directly to trigger button */}
+      <div
+        ref={popoverRef}
+        className={`absolute ${popoverPosClass} z-[90] w-72 sm:w-80 max-w-[calc(100vw-24px)] bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col p-4 gap-3 animate-fade-in ring-1 ring-white/10 text-xs`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="font-bold text-gray-200 flex items-center gap-1.5 text-xs uppercase tracking-wider">
+            <User className="w-3.5 h-3.5 text-indigo-400" /> Account Profile
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Active Account Info */}
+        {isLoggedIn && userProfile ? (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5">
+              <SingleAvatar
+                name={userProfile.displayName || userProfile.email}
+                profileImage={userProfile.photoURL}
+                sizeClass="w-9 h-9 text-xs"
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-gray-100 text-xs truncate">{userProfile.displayName}</span>
+                <span className="text-[10px] text-gray-400 truncate">{userProfile.email}</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+              <span className="text-[10px] text-gray-400">Current Role</span>
+              <span className={`badge px-2 py-0.5 text-[10px] border ${currentRoleStyle.color}`}>
                 {currentRoleStyle.label}
               </span>
             </div>
 
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-gray-400">
-              <span>Firebase UID: <code className="text-gray-300 text-[10px]">{userProfile.uid}</code></span>
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+              <span className="text-[10px] text-gray-500 font-mono">UID: {userProfile.uid?.slice(0, 8)}...</span>
               <button
                 type="button"
                 onClick={async () => {
@@ -90,16 +128,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </button>
             </div>
           </div>
-        ) : null}
-
-        {/* Google Sign-In Action */}
-        {!isLoggedIn && (
-          <div className="flex flex-col gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl">
-            <span className="font-bold text-gray-200 flex items-center gap-1.5 text-sm">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Google Authentication
+        ) : (
+          <div className="flex flex-col gap-2">
+            <span className="font-bold text-gray-200 flex items-center gap-1.5 text-xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Sign In Required
             </span>
             <p className="text-[11px] text-gray-400 leading-relaxed">
-              Sign in with your Google account to access authorized creator workspace or admin features.
+              Sign in with your Google account to access your workspace.
             </p>
 
             <button
@@ -108,16 +143,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 const profile = await signInWithGoogle();
                 onClose();
                 if (profile) {
-                  if (profile.role === 'unassigned') {
-                    alert(`Logged in as ${profile.email}. Your account is not onboarded by Aurex Digitals yet.`);
-                  } else if (profile.role === 'creator') {
+                  if (profile.role === 'creator') {
                     enterApp('my_assignments');
                   } else {
                     enterApp('dashboard');
                   }
                 }
               }}
-              className="w-full mt-2 py-3 bg-white hover:bg-gray-100 text-slate-950 font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-transform active:scale-98"
+              className="w-full mt-1 py-2.5 bg-white hover:bg-gray-100 text-slate-950 font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-transform active:scale-98 text-xs"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -142,12 +175,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* Subtle Company Attribution */}
-        <div className="pt-2 pb-1 flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
-          <img src="/Icon Only .png" alt="Aurex Digitals" className="w-3.5 h-3.5 object-contain opacity-75" />
-          <span>ReelFlow • Powered by Aurex Digitals</span>
+        {/* Company Attribution */}
+        <div className="pt-2 flex items-center justify-between text-[10px] text-gray-500 border-t border-slate-800/80">
+          <span className="flex items-center gap-1">
+            <img src="/Icon Only .png" alt="Aurex Digitals" className="w-3 h-3 object-contain opacity-75" />
+            <span>Aurex Digitals</span>
+          </span>
+          <span className="font-mono">ReelFlow</span>
         </div>
       </div>
-    </BottomSheet>
+    </>
   );
 };
+

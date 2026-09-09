@@ -33,12 +33,12 @@ export const AnalyticsView: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header Bar & Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800/90 rounded-2xl">
         <div>
           <h2 className="text-base font-extrabold text-gray-100 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-400" /> Agency Analytics & Production Intel
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mt-0.5">
             Derive shoot completion rates, category distributions, and creator performance metrics
           </p>
         </div>
@@ -48,7 +48,7 @@ export const AnalyticsView: React.FC = () => {
           <button
             type="button"
             onClick={() => setRange('weekly')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
               range === 'weekly' ? 'bg-indigo-600 text-white font-bold' : 'text-gray-400 hover:text-gray-200'
             }`}
           >
@@ -57,18 +57,18 @@ export const AnalyticsView: React.FC = () => {
           <button
             type="button"
             onClick={() => setRange('monthly')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
               range === 'monthly' ? 'bg-indigo-600 text-white font-bold' : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             Monthly View
           </button>
         </div>
-      </div>
+      </header>
 
       {/* KPI Cards Grid */}
-      <div>
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+      <section className="flex flex-col gap-2.5">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
           {range === 'weekly' ? 'This Week Performance Overview' : 'This Month Performance Overview'}
         </h3>
         <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
@@ -114,10 +114,10 @@ export const AnalyticsView: React.FC = () => {
             <span className="text-2xl font-extrabold text-purple-400 mt-1">{overview.posted}</span>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Completion Rates Progress Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Shoot Completion Rate */}
         <div className="glass-panel p-4 rounded-2xl flex flex-col gap-3 border-slate-800">
           <div className="flex items-center justify-between">
@@ -155,13 +155,13 @@ export const AnalyticsView: React.FC = () => {
             {overview.posted} of {overview.totalContent} scheduled social posts published.
           </p>
         </div>
-      </div>
+      </section>
 
       {/* Production Trend & Category Analytics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Weekly Content Production Trend Chart (Requirement 25) */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Weekly Content Production Trend Chart */}
         <div className="glass-panel p-4 rounded-2xl flex flex-col gap-4 border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
             <span className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
               <TrendingUp className="w-4 h-4 text-indigo-400" /> Content Production Trend
             </span>
@@ -200,9 +200,9 @@ export const AnalyticsView: React.FC = () => {
           )}
         </div>
 
-        {/* Content Category Analytics (Requirement 23) */}
+        {/* Content Category Analytics */}
         <div className="glass-panel p-4 rounded-2xl flex flex-col gap-4 border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
             <span className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
               <PieChart className="w-4 h-4 text-purple-400" /> Category Breakdown
             </span>
@@ -234,11 +234,11 @@ export const AnalyticsView: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Creator Analytics Table (Requirement 24) */}
-      <div className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+      {/* Creator Analytics Table */}
+      <section className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
           <div>
             <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
               <Users className="w-4 h-4 text-indigo-400" /> Creator-wise Content Contribution
@@ -290,7 +290,7 @@ export const AnalyticsView: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

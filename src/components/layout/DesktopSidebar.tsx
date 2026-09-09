@@ -66,8 +66,9 @@ export const DesktopSidebar: React.FC = () => {
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-60 bg-slate-950/90 border-r border-slate-800/80 p-4 shrink-0 h-[calc(100vh-60px)] sticky top-[60px] overflow-y-auto">
-        {/* Active Store Indicator */}
+      <aside className="hidden md:flex flex-col w-60 bg-slate-950/90 border-r border-slate-800/80 shrink-0 h-[calc(100vh-60px)] sticky top-[60px] z-40">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col">
+          {/* Active Store Indicator */}
         <div className="p-3 mb-4 rounded-xl bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-slate-800 flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold text-base shrink-0">
             <Building2 className="w-4 h-4 text-indigo-400" />
@@ -126,22 +127,27 @@ export const DesktopSidebar: React.FC = () => {
 
         {/* Bottom Summary Widget */}
         {overdueCount > 0 && (
-          <div className="mt-4 p-3 mb-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab('pending')}
+            className="mt-4 p-3 mb-2 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors flex items-center gap-2 text-left cursor-pointer w-full"
+            title="Click to view all overdue items"
+          >
             <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
             <div className="flex flex-col text-[11px]">
               <span className="font-bold text-amber-300">{overdueCount} Items Overdue</span>
-              <span className="text-amber-400/80 text-[10px]">Attention required today</span>
+              <span className="text-amber-400/80 text-[10px]">Attention required today • View Hub</span>
             </div>
-          </div>
+          </button>
         )}
 
+        </div>
+
         {/* Dedicated User Profile Section */}
-
-
-        <div className="mt-auto pt-3 border-t border-slate-800 flex flex-col gap-2">
+        <div className="mt-auto p-4 border-t border-slate-800 flex flex-col gap-2 relative bg-slate-950/90">
           <button
             type="button"
-            onClick={() => setIsLoginOpen(true)}
+            onClick={() => setIsLoginOpen(!isLoginOpen)}
             className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors w-full text-left cursor-pointer"
             title="Click to manage account & auth roles"
           >
@@ -165,6 +171,8 @@ export const DesktopSidebar: React.FC = () => {
             </span>
           </button>
 
+          {/* Login & Auth Persona Attached Popover */}
+          <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} position="up" />
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-1.5 opacity-75 hover:opacity-100 transition-opacity">
@@ -175,9 +183,7 @@ export const DesktopSidebar: React.FC = () => {
           </div>
         </div>
       </aside>
-
-      {/* Login & Auth Persona Modal triggered from Sidebar */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>
   );
 };
+

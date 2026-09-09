@@ -95,55 +95,47 @@ export const ContentFilterSheet: React.FC = () => {
 
 
         {/* Shoot Status Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Shoot Status</label>
-          <select
-            value={filters.shootStatus}
-            onChange={(e) => setFilters((prev) => ({ ...prev, shootStatus: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
-          >
-            <option value="all">All Shoot Statuses</option>
-            {(['Not Started', 'Scheduled', 'Shot', 'Cancelled'] as ShootStatus[]).map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Shoot Status"
+          options={[
+            { value: 'all', label: 'All Shoot Statuses' },
+            { value: 'Not Started', label: 'Not Started' },
+            { value: 'Scheduled', label: 'Scheduled' },
+            { value: 'Shot', label: 'Shot' },
+            { value: 'Cancelled', label: 'Cancelled' }
+          ]}
+          value={filters.shootStatus}
+          onChange={(val) => setFilters((prev) => ({ ...prev, shootStatus: val }))}
+        />
 
         {/* Post Status Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Post Status</label>
-          <select
-            value={filters.postStatus}
-            onChange={(e) => setFilters((prev) => ({ ...prev, postStatus: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
-          >
-            <option value="all">All Post Statuses</option>
-            {(['Pending', 'Editing', 'Ready', 'Posted', 'Cancelled'] as PostStatus[]).map((st) => (
-              <option key={st} value={st}>
-                {st === 'Ready' ? 'Ready to Post' : st}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Post Status"
+          options={[
+            { value: 'all', label: 'All Post Statuses' },
+            { value: 'Pending', label: 'Pending' },
+            { value: 'Editing', label: 'Editing' },
+            { value: 'Ready', label: 'Ready to Post' },
+            { value: 'Posted', label: 'Posted' },
+            { value: 'Cancelled', label: 'Cancelled' }
+          ]}
+          value={filters.postStatus}
+          onChange={(val) => setFilters((prev) => ({ ...prev, postStatus: val }))}
+        />
 
         {/* Priority Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Priority</label>
-          <select
-            value={filters.priority}
-            onChange={(e) => setFilters((prev) => ({ ...prev, priority: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
-          >
-            <option value="all">All Priorities</option>
-            {(['Low', 'Normal', 'High', 'Urgent'] as Priority[]).map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Priority"
+          options={[
+            { value: 'all', label: 'All Priorities' },
+            { value: 'Low', label: 'Low Priority' },
+            { value: 'Normal', label: 'Normal Priority' },
+            { value: 'High', label: 'High Priority' },
+            { value: 'Urgent', label: 'Urgent Priority' }
+          ]}
+          value={filters.priority}
+          onChange={(val) => setFilters((prev) => ({ ...prev, priority: val }))}
+        />
 
         {/* Done button */}
         <button

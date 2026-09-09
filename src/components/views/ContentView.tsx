@@ -4,6 +4,7 @@ import { ContentCard } from '../content/ContentCard';
 import { SearchInput } from '../common/SearchInput';
 import { ContentItem, PostStatus } from '../../types';
 import { Filter, LayoutGrid, List, Columns, Plus, RotateCcw, Search } from 'lucide-react';
+import { CardSkeleton, HeaderSkeleton } from '../common/Skeletons';
 
 export const ContentView: React.FC = () => {
   const {
@@ -12,7 +13,8 @@ export const ContentView: React.FC = () => {
     setFilters,
     resetFilters,
     setIsFilterSheetOpen,
-    openAddContent
+    openAddContent,
+    isLoading
   } = useApp();
 
   const [viewStyle, setViewStyle] = useState<'grid' | 'list' | 'pipeline'>('grid');
@@ -33,13 +35,24 @@ export const ContentView: React.FC = () => {
     { status: 'Posted', label: 'Posted on Social', color: 'border-purple-500/40' }
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        <HeaderSkeleton />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          {Array(6).fill(0).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5 animate-fade-in">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-extrabold text-gray-100">Content Management</h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mt-0.5">
             All content concepts, shoot dates, edit progress, and social post schedules ({filteredContent.length} items)
           </p>
         </div>
@@ -47,11 +60,11 @@ export const ContentView: React.FC = () => {
         <button
           type="button"
           onClick={() => openAddContent()}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 cursor-pointer active:scale-95 transition-transform"
         >
           <Plus className="w-4 h-4" /> Create Content
         </button>
-      </div>
+      </header>
 
       {/* Search & Filter Toolbar */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -64,7 +77,7 @@ export const ContentView: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsFilterSheetOpen(true)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
             hasActiveFilters
               ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/50'
               : 'bg-slate-900 text-gray-300 border-slate-800 hover:border-slate-700'
@@ -82,7 +95,7 @@ export const ContentView: React.FC = () => {
           <button
             type="button"
             onClick={resetFilters}
-            className="p-2 text-gray-400 hover:text-gray-200 text-xs flex items-center gap-1"
+            className="p-2 text-gray-400 hover:text-gray-200 text-xs flex items-center gap-1 cursor-pointer"
             title="Reset Filters"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -94,7 +107,7 @@ export const ContentView: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewStyle('grid')}
-            className={`p-1.5 rounded-lg ${
+            className={`p-1.5 rounded-lg cursor-pointer ${
               viewStyle === 'grid' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
             }`}
             title="Grid View"
@@ -105,7 +118,7 @@ export const ContentView: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewStyle('list')}
-            className={`p-1.5 rounded-lg ${
+            className={`p-1.5 rounded-lg cursor-pointer ${
               viewStyle === 'list' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
             }`}
             title="Compact List View"
@@ -116,7 +129,7 @@ export const ContentView: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewStyle('pipeline')}
-            className={`p-1.5 rounded-lg ${
+            className={`p-1.5 rounded-lg cursor-pointer ${
               viewStyle === 'pipeline' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-200'
             }`}
             title="Kanban Pipeline Board"
@@ -136,7 +149,7 @@ export const ContentView: React.FC = () => {
           <button
             type="button"
             onClick={resetFilters}
-            className="text-indigo-400 hover:underline font-semibold"
+            className="text-indigo-400 hover:underline font-semibold cursor-pointer"
           >
             Reset Filters
           </button>
@@ -161,11 +174,11 @@ export const ContentView: React.FC = () => {
             return (
               <div
                 key={col.status}
-                className={`p-3 bg-slate-900/70 border ${col.color} rounded-2xl flex flex-col gap-3 min-w-[260px]`}
+                className={`p-3 bg-slate-900/50 border ${col.color} rounded-2xl flex flex-col gap-3 min-w-[260px]`}
               >
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
                   <span className="text-xs font-bold text-gray-200">{col.label}</span>
-                  <span className="badge px-2 py-0.5 text-[10px] bg-slate-800 text-gray-300">
+                  <span className="badge px-2 py-0.5 text-[10px] bg-slate-800 text-gray-300 font-semibold">
                     {colItems.length}
                   </span>
                 </div>

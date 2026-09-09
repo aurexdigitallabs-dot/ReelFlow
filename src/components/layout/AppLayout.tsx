@@ -14,6 +14,7 @@ import { AnalyticsView } from '../views/AnalyticsView';
 import { PendingView } from '../views/PendingView';
 
 import { AddContentModal } from '../content/AddContentModal';
+import { EditContentModal } from '../content/EditContentModal';
 import { ContentFilterSheet } from '../content/ContentFilterSheet';
 import { NotificationDrawer } from '../notifications/NotificationDrawer';
 import { CreatorDetailModal } from '../creators/CreatorDetailModal';
@@ -48,7 +49,7 @@ export const AppLayout: React.FC = () => {
       <Header />
 
       {/* Main Layout Container */}
-      <div className="flex flex-1 w-full max-w-7xl mx-auto">
+      <div className="flex flex-1 w-full">
         {/* Desktop Sidebar */}
         <DesktopSidebar />
 
@@ -63,6 +64,7 @@ export const AppLayout: React.FC = () => {
 
       {/* Global Modals & Bottom Sheets */}
       <AddContentModal />
+      <EditContentModal />
       <ContentFilterSheet />
       <NotificationDrawer />
 

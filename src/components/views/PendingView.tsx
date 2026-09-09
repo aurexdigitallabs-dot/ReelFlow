@@ -24,13 +24,13 @@ export const PendingView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+      {/* Header Bar */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800/90 rounded-2xl">
         <div>
           <h2 className="text-base font-extrabold text-gray-100 flex items-center gap-2">
             <Clock className="w-5 h-5 text-amber-400" /> Pending Content & Workflow Hub
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mt-0.5">
             Categorized workflow stages from pending shoots to ready-to-post social media reels
           </p>
         </div>
@@ -49,12 +49,12 @@ export const PendingView: React.FC = () => {
           </select>
           <div className="pointer-events-none absolute right-2.5 text-gray-400 text-xs">▼</div>
         </div>
-      </div>
+      </header>
 
-      {/* 1. Ready to Post Section (Highest Priority!) */}
+      {/* 1. Ready to Post Section */}
       {(activeSection === 'all' || activeSection === 'ready') && (
-        <div className="glass-panel p-4 rounded-2xl border-emerald-500/30 bg-gradient-to-b from-slate-900 to-emerald-950/10 flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <section className="p-4 rounded-2xl border border-emerald-500/20 bg-slate-900/40 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Sparkles className="w-4 h-4" /> Ready to Post ({readyToPostList.length})
             </span>
@@ -74,13 +74,13 @@ export const PendingView: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* 2. Pending Shoot Section */}
       {(activeSection === 'all' || activeSection === 'pending_shoot') && (
-        <div className="glass-panel p-4 rounded-2xl border-amber-500/30 bg-gradient-to-b from-slate-900 to-amber-950/10 flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <section className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900/40 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Camera className="w-4 h-4" /> Pending Shoot ({pendingShootList.length})
             </span>
@@ -98,13 +98,13 @@ export const PendingView: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* 3. In Post Production (Editing) */}
       {(activeSection === 'all' || activeSection === 'editing') && (
-        <div className="glass-panel p-4 rounded-2xl border-blue-500/30 bg-gradient-to-b from-slate-900 to-blue-950/10 flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <section className="p-4 rounded-2xl border border-blue-500/20 bg-slate-900/40 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <span className="text-xs font-bold text-blue-400 flex items-center gap-1.5 uppercase tracking-wider">
               <Video className="w-4 h-4" /> In Post-Production / Editing ({inPostProdList.length})
             </span>
@@ -122,7 +122,7 @@ export const PendingView: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );
