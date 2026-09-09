@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { Store, Creator, Category, ContentItem, AppNotification, FilterState, ActiveTab, ViewMode, ShootStatus, PostStatus } from '../types';
 import { dbService } from '../services/dbService';
 import { storageService } from '../services/storageService';
+import { INITIAL_CATEGORIES } from '../data/seedData';
 
 interface AppContextType {
   stores: Store[];
@@ -114,7 +115,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLoading(true);
     const unsubStores = dbService.subscribeStores((data) => setStores(data));
     const unsubCreators = dbService.subscribeCreators((data) => setCreators(data));
-    const unsubCategories = dbService.subscribeCategories((data) => setCategories(data));
+    const unsubCategories = dbService.subscribeCategories((data) => {
+      if (!data || data.length === 0) {
+        setCategories(INITIAL_CATEGORIES);
+      } else {
+        setCategories(data);
+      }
+    });
     const unsubContent = dbService.subscribeContent((data) => {
       setContent(data);
       setIsLoading(false);

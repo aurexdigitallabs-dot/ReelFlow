@@ -4,7 +4,8 @@ import { Priority, ShootStatus, PostStatus } from '../../types';
 import { BottomSheet } from '../common/BottomSheet';
 import { getTodayString } from '../../utils/dateUtils';
 import { CreatorAvatar } from '../common/CreatorAvatar';
-import { AlertCircle, Check, Sparkles } from 'lucide-react';
+import { AlertCircle, Check, Sparkles, Calendar } from 'lucide-react';
+import { INITIAL_CATEGORIES } from '../../data/seedData';
 
 export const AddContentModal: React.FC = () => {
   const {
@@ -19,11 +20,12 @@ export const AddContentModal: React.FC = () => {
   } = useApp();
 
   const todayStr = getTodayString();
+  const activeCategories = categories.length > 0 ? categories : INITIAL_CATEGORIES;
 
   const [title, setTitle] = useState('');
   const [concept, setConcept] = useState('');
   const [storeId, setStoreId] = useState(currentStoreId !== 'all' ? currentStoreId : stores[0]?.id || '');
-  const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
+  const [categoryId, setCategoryId] = useState(activeCategories[0]?.id || '');
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<string[]>([]);
   const [shootDate, setShootDate] = useState(todayStr);
   const [postDate, setPostDate] = useState(todayStr);
@@ -52,7 +54,7 @@ export const AddContentModal: React.FC = () => {
         setTitle('');
         setConcept('');
         setStoreId(currentStoreId !== 'all' ? currentStoreId : stores[0]?.id || '');
-        setCategoryId(categories[0]?.id || '');
+        setCategoryId(activeCategories[0]?.id || '');
         setSelectedCreatorIds(creators[0] ? [creators[0].id] : []);
         setShootDate(todayStr);
         setPostDate(todayStr);
@@ -61,7 +63,7 @@ export const AddContentModal: React.FC = () => {
         setReferenceUrl('');
       }
     }
-  }, [isAddContentOpen, addContentPrefill, currentStoreId, stores, categories, creators, todayStr]);
+  }, [isAddContentOpen, addContentPrefill, currentStoreId, stores, activeCategories, creators, todayStr]);
 
   // Date validation check
   useEffect(() => {
@@ -147,11 +149,11 @@ export const AddContentModal: React.FC = () => {
           <select
             value={storeId}
             onChange={(e) => setStoreId(e.target.value)}
-            className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             {stores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.logo} {s.name} ({s.code})
+              <option key={s.id} value={s.id} className="bg-slate-900 text-gray-100 py-1">
+                {s.name} ({s.code})
               </option>
             ))}
           </select>
@@ -196,8 +198,8 @@ export const AddContentModal: React.FC = () => {
             onChange={(e) => setCategoryId(e.target.value)}
             className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
+            {activeCategories.map((cat) => (
+              <option key={cat.id} value={cat.id} className="bg-slate-900 text-gray-100 py-1">
                 {cat.name}
               </option>
             ))}
@@ -237,28 +239,37 @@ export const AddContentModal: React.FC = () => {
             <label className="block text-xs font-semibold text-gray-300 mb-1">
               Shoot Date *
             </label>
-            <input
-              type="date"
-              required
-              value={shootDate}
-              onChange={(e) => setShootDate(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500"
-            />
+            <div className="relative flex items-center">
+              <Calendar className="w-4 h-4 text-indigo-400 absolute left-3 pointer-events-none shrink-0" />
+              <input
+                type="date"
+                required
+                value={shootDate}
+                onChange={(e) => setShootDate(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                className="w-full pl-9 pr-2 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+              />
+            </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-gray-300 mb-1">
               Post Date *
             </label>
-            <input
-              type="date"
-              required
-              value={postDate}
-              onChange={(e) => setPostDate(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500"
-            />
+            <div className="relative flex items-center">
+              <Calendar className="w-4 h-4 text-indigo-400 absolute left-3 pointer-events-none shrink-0" />
+              <input
+                type="date"
+                required
+                value={postDate}
+                onChange={(e) => setPostDate(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                className="w-full pl-9 pr-2 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+              />
+            </div>
           </div>
         </div>
+
 
         {dateWarning && (
           <div className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 p-2 rounded-xl border border-amber-500/20">

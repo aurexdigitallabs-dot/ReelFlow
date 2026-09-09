@@ -41,12 +41,12 @@ export const ContentFilterSheet: React.FC = () => {
           <select
             value={filters.storeId}
             onChange={(e) => setFilters((prev) => ({ ...prev, storeId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
           >
-            <option value="all">All Brands & Stores</option>
+            <option value="all" className="bg-slate-900 text-gray-100">All Brands & Stores</option>
             {stores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.logo} {s.name}
+              <option key={s.id} value={s.id} className="bg-slate-900 text-gray-100">
+                {s.name} ({s.code})
               </option>
             ))}
           </select>
@@ -58,11 +58,11 @@ export const ContentFilterSheet: React.FC = () => {
           <select
             value={filters.creatorId}
             onChange={(e) => setFilters((prev) => ({ ...prev, creatorId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
           >
-            <option value="all">All Creators</option>
+            <option value="all" className="bg-slate-900 text-gray-100">All Creators</option>
             {creators.map((c) => (
-              <option key={c.id} value={c.id}>
+              <option key={c.id} value={c.id} className="bg-slate-900 text-gray-100">
                 {c.name} (@{c.username})
               </option>
             ))}
@@ -75,11 +75,11 @@ export const ContentFilterSheet: React.FC = () => {
           <select
             value={filters.categoryId}
             onChange={(e) => setFilters((prev) => ({ ...prev, categoryId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none"
+            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
           >
-            <option value="all">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
+            <option value="all" className="bg-slate-900 text-gray-100">All Categories</option>
+            {(categories.length > 0 ? categories : []).map((cat) => (
+              <option key={cat.id} value={cat.id} className="bg-slate-900 text-gray-100">
                 {cat.name}
               </option>
             ))}
