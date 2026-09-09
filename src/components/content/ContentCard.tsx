@@ -128,8 +128,8 @@ export const ContentCard: React.FC<ContentCardProps> = ({ content, onEdit }) => 
 
       {/* Main Content Concept & Title */}
       <div>
-        <h4 className="text-sm font-bold text-gray-100 line-clamp-1">{content.title}</h4>
-        <p className="text-xs text-gray-300 mt-1 line-clamp-2 leading-relaxed">
+        <h4 className="text-sm font-bold text-gray-100 line-clamp-1 break-words">{content.title}</h4>
+        <p className="text-xs text-gray-300 mt-1 line-clamp-2 leading-relaxed break-words">
           {content.concept}
         </p>
       </div>
@@ -155,29 +155,29 @@ export const ContentCard: React.FC<ContentCardProps> = ({ content, onEdit }) => 
       {/* Creators & Dates Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
         {/* Creator(s) */}
-        <div className="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-slate-800/60">
-          <span className="text-[11px] text-gray-400 font-medium">Creator(s):</span>
+        <div className="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-slate-800/60 min-w-0">
+          <span className="text-[11px] text-gray-400 font-medium shrink-0">Creator(s):</span>
           <CreatorAvatar creators={assignedCreators} size="sm" showNames />
         </div>
 
         {/* Reference Link if available */}
         {content.referenceUrl && (
-          <div className="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-slate-800/60">
-            <span className="text-[11px] text-gray-400 font-medium">Reference:</span>
+          <div className="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-slate-800/60 min-w-0">
+            <span className="text-[11px] text-gray-400 font-medium shrink-0">Reference:</span>
             <a
               href={content.referenceUrl}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:underline truncate max-w-[120px]"
             >
-              <ExternalLink className="w-3 h-3" /> View Link
+              <ExternalLink className="w-3 h-3 shrink-0" /> View Link
             </a>
           </div>
         )}
       </div>
 
       {/* Statuses Grid: Shoot & Post Status Interactive Selectors */}
-      <div className="grid grid-cols-2 gap-2 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/60">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/60">
         {/* Shoot Status */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">

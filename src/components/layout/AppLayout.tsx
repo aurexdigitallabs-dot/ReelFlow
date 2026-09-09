@@ -53,7 +53,7 @@ export const AppLayout: React.FC = () => {
         <DesktopSidebar />
 
         {/* Dynamic Main View Area */}
-        <main className="flex-1 w-full p-4 sm:p-6 pb-24 md:pb-8 overflow-y-auto min-w-0">
+        <main className="flex-1 w-full p-4 sm:p-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto min-w-0">
           {renderActiveView()}
         </main>
       </div>

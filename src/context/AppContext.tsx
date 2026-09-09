@@ -170,11 +170,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateShootStatus = async (id: string, shootStatus: ShootStatus) => {
-    await dbService.updateShootStatus(id, shootStatus);
+    if (shootStatus === 'Cancelled') {
+      await dbService.updateContent(id, { shootStatus, postStatus: 'Cancelled' });
+    } else {
+      await dbService.updateShootStatus(id, shootStatus);
+    }
   };
 
   const updatePostStatus = async (id: string, postStatus: PostStatus) => {
-    await dbService.updatePostStatus(id, postStatus);
+    const item = content.find((i) => i.id === id);
+    if (
+      item &&
+      (postStatus === 'Editing' || postStatus === 'Ready' || postStatus === 'Posted') &&
+      item.shootStatus !== 'Shot'
+    ) {
+      await dbService.updateContent(id, { postStatus, shootStatus: 'Shot' });
+    } else {
+      await dbService.updatePostStatus(id, postStatus);
+    }
   };
 
   // Real DB Creator Actions

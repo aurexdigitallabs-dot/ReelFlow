@@ -81,8 +81,11 @@ export const AddContentModal: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (!concept.trim()) {
       setErrorMsg('Please enter a content concept.');
@@ -96,22 +99,29 @@ export const AddContentModal: React.FC = () => {
 
     const itemTitle = title.trim() || concept.trim().slice(0, 40) + '...';
 
-    addContent({
-      storeId,
-      title: itemTitle,
-      concept: concept.trim(),
-      categoryId,
-      creatorIds: selectedCreatorIds,
-      shootDate,
-      postDate,
-      shootStatus: 'Scheduled' as ShootStatus,
-      postStatus: 'Pending' as PostStatus,
-      priority,
-      notes: notes.trim() || undefined,
-      referenceUrl: referenceUrl.trim() || undefined
-    });
+    setIsSubmitting(true);
+    try {
+      await addContent({
+        storeId,
+        title: itemTitle,
+        concept: concept.trim(),
+        categoryId,
+        creatorIds: selectedCreatorIds,
+        shootDate,
+        postDate,
+        shootStatus: 'Scheduled' as ShootStatus,
+        postStatus: 'Pending' as PostStatus,
+        priority,
+        notes: notes.trim() || undefined,
+        referenceUrl: referenceUrl.trim() || undefined
+      });
 
-    setIsAddContentOpen(false);
+      setIsAddContentOpen(false);
+    } catch (err) {
+      setErrorMsg('Failed to save content item. Please check network connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -314,9 +324,10 @@ export const AddContentModal: React.FC = () => {
         {/* Submit button */}
         <button
           type="submit"
-          className="w-full mt-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-transform active:scale-98"
+          disabled={isSubmitting}
+          className="w-full mt-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-transform active:scale-98"
         >
-          <Sparkles className="w-4 h-4" /> Create Content
+          <Sparkles className="w-4 h-4" /> {isSubmitting ? 'Creating Content...' : 'Create Content'}
         </button>
       </form>
     </BottomSheet>

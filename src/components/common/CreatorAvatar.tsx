@@ -28,8 +28,8 @@ export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
     const extraCount = creators.length - displayList.length;
 
     return (
-      <div className="flex items-center gap-2">
-        <div className="flex -space-x-2 overflow-hidden">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="flex -space-x-2 overflow-hidden shrink-0">
           {displayList.map((c, idx) => (
             <div
               key={c.id || idx}
@@ -62,7 +62,7 @@ export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
         </div>
 
         {showNames && (
-          <span className="text-xs font-medium text-gray-300 truncate max-w-[140px]">
+          <span className="text-xs font-medium text-gray-300 truncate max-w-[90px] xs:max-w-[140px]">
             {creators.map(c => c.name).join(' + ')}
           </span>
         )}
