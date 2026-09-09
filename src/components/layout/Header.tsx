@@ -91,20 +91,7 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* User Auth Profile Trigger */}
-          <button
-            type="button"
-            onClick={() => setIsLoginOpen(true)}
-            className="flex items-center gap-1 px-2 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-[11px] sm:text-xs font-semibold text-gray-200 transition-colors"
-          >
-            <User className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="hidden sm:inline truncate max-w-[80px]">{userProfile?.displayName || userProfile?.email?.split('@')[0] || 'Sign In'}</span>
-            <span className={`badge px-1.5 py-0.5 text-[9px] border ${roleBadgeStyle}`}>
-              {roleName}
-            </span>
-          </button>
-
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Theme Toggle */}
           <button
             type="button"
@@ -113,9 +100,9 @@ export const Header: React.FC = () => {
             title="Toggle Dark / Light Theme"
           >
             {theme === 'dark' ? (
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-3.5 h-3.5 text-indigo-400" />
+              <Moon className="w-4 h-4 text-indigo-400" />
             )}
           </button>
 
@@ -126,20 +113,20 @@ export const Header: React.FC = () => {
             className="relative p-1.5 sm:p-2 text-gray-300 hover:text-white hover:bg-slate-900 rounded-xl transition-colors shrink-0"
             title="View Alerts & Reminders"
           >
-            <Bell className="w-3.5 h-3.5" />
+            <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-slate-950 animate-pulse" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-950 animate-pulse" />
             )}
           </button>
 
-          {/* + Add Content Header Button (Desktop/Tablet) */}
+          {/* + Add Content Header Button */}
           <button
             type="button"
             onClick={() => openAddContent()}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Content</span>
+            <span className="hidden xs:inline">+ Add Content</span>
           </button>
         </div>
       </header>
