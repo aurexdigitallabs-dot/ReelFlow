@@ -3,6 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { BottomSheet } from '../common/BottomSheet';
 import { ShootStatus, PostStatus, Priority } from '../../types';
 import { RotateCcw } from 'lucide-react';
+import { CustomSelect } from '../common/CustomSelect';
+import { INITIAL_CATEGORIES } from '../../data/seedData';
 
 export const ContentFilterSheet: React.FC = () => {
   const {
@@ -15,6 +17,34 @@ export const ContentFilterSheet: React.FC = () => {
     creators,
     categories
   } = useApp();
+
+  const activeCategories = categories.length > 0 ? categories : INITIAL_CATEGORIES;
+
+  const storeOptions = [
+    { value: 'all', label: 'All Brands & Stores' },
+    ...stores.map((s) => ({
+      value: s.id,
+      label: s.name // ONLY display store name
+    }))
+  ];
+
+  const creatorOptions = [
+    { value: 'all', label: 'All Creators' },
+    ...creators.map((c) => ({
+      value: c.id,
+      label: c.name,
+      sublabel: `@${c.username}`
+    }))
+  ];
+
+  const categoryOptions = [
+    { value: 'all', label: 'All Categories' },
+    ...activeCategories.map((cat) => ({
+      value: cat.id,
+      label: cat.name,
+      color: cat.color
+    }))
+  ];
 
   return (
     <BottomSheet
@@ -36,55 +66,33 @@ export const ContentFilterSheet: React.FC = () => {
         </div>
 
         {/* Store Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Brand / Store</label>
-          <select
-            value={filters.storeId}
-            onChange={(e) => setFilters((prev) => ({ ...prev, storeId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
-          >
-            <option value="all" className="bg-slate-900 text-gray-100">All Brands & Stores</option>
-            {stores.map((s) => (
-              <option key={s.id} value={s.id} className="bg-slate-900 text-gray-100">
-                {s.name} ({s.code})
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Brand / Store"
+          options={storeOptions}
+          value={filters.storeId}
+          onChange={(val) => setFilters((prev) => ({ ...prev, storeId: val }))}
+        />
 
         {/* Creator Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Creator</label>
-          <select
-            value={filters.creatorId}
-            onChange={(e) => setFilters((prev) => ({ ...prev, creatorId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
-          >
-            <option value="all" className="bg-slate-900 text-gray-100">All Creators</option>
-            {creators.map((c) => (
-              <option key={c.id} value={c.id} className="bg-slate-900 text-gray-100">
-                {c.name} (@{c.username})
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Creator"
+          searchable
+          searchPlaceholder="Search creator..."
+          options={creatorOptions}
+          value={filters.creatorId}
+          onChange={(val) => setFilters((prev) => ({ ...prev, creatorId: val }))}
+        />
 
         {/* Category Filter */}
-        <div>
-          <label className="block font-semibold text-gray-300 mb-1">Category</label>
-          <select
-            value={filters.categoryId}
-            onChange={(e) => setFilters((prev) => ({ ...prev, categoryId: e.target.value }))}
-            className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none cursor-pointer"
-          >
-            <option value="all" className="bg-slate-900 text-gray-100">All Categories</option>
-            {(categories.length > 0 ? categories : []).map((cat) => (
-              <option key={cat.id} value={cat.id} className="bg-slate-900 text-gray-100">
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          label="Category"
+          searchable
+          searchPlaceholder="Search category..."
+          options={categoryOptions}
+          value={filters.categoryId}
+          onChange={(val) => setFilters((prev) => ({ ...prev, categoryId: val }))}
+        />
+
 
         {/* Shoot Status Filter */}
         <div>

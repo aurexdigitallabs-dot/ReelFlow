@@ -6,6 +6,9 @@ import { getTodayString } from '../../utils/dateUtils';
 import { CreatorAvatar } from '../common/CreatorAvatar';
 import { AlertCircle, Check, Sparkles, Calendar } from 'lucide-react';
 import { INITIAL_CATEGORIES } from '../../data/seedData';
+import { CustomSelect } from '../common/CustomSelect';
+
+const DRAFT_KEY = 'reelflow_add_content_draft';
 
 export const AddContentModal: React.FC = () => {
   const {
@@ -36,7 +39,7 @@ export const AddContentModal: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [dateWarning, setDateWarning] = useState('');
 
-  // Handle prefill or reset when modal opens
+  // Auto-restore draft or prefill when modal opens
   useEffect(() => {
     if (isAddContentOpen) {
       setErrorMsg('');
@@ -51,6 +54,27 @@ export const AddContentModal: React.FC = () => {
         if (addContentPrefill.shootDate) setShootDate(addContentPrefill.shootDate);
         if (addContentPrefill.postDate) setPostDate(addContentPrefill.postDate);
       } else {
+        // Try restoring draft from localStorage
+        const savedDraft = localStorage.getItem(DRAFT_KEY);
+        if (savedDraft) {
+          try {
+            const draft = JSON.parse(savedDraft);
+            setTitle(draft.title || '');
+            setConcept(draft.concept || '');
+            if (draft.storeId) setStoreId(draft.storeId);
+            if (draft.categoryId) setCategoryId(draft.categoryId);
+            if (draft.selectedCreatorIds) setSelectedCreatorIds(draft.selectedCreatorIds);
+            if (draft.shootDate) setShootDate(draft.shootDate);
+            if (draft.postDate) setPostDate(draft.postDate);
+            if (draft.priority) setPriority(draft.priority);
+            if (draft.notes) setNotes(draft.notes);
+            if (draft.referenceUrl) setReferenceUrl(draft.referenceUrl);
+            return;
+          } catch (e) {
+            console.error('Failed to parse content draft:', e);
+          }
+        }
+
         setTitle('');
         setConcept('');
         setStoreId(currentStoreId !== 'all' ? currentStoreId : stores[0]?.id || '');
@@ -64,6 +88,25 @@ export const AddContentModal: React.FC = () => {
       }
     }
   }, [isAddContentOpen, addContentPrefill, currentStoreId, stores, activeCategories, creators, todayStr]);
+
+  // Persist entered data to localStorage whenever fields change
+  useEffect(() => {
+    if (isAddContentOpen && (title || concept || notes || referenceUrl)) {
+      const draft = {
+        title,
+        concept,
+        storeId,
+        categoryId,
+        selectedCreatorIds,
+        shootDate,
+        postDate,
+        priority,
+        notes,
+        referenceUrl
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }
+  }, [isAddContentOpen, title, concept, storeId, categoryId, selectedCreatorIds, shootDate, postDate, priority, notes, referenceUrl]);
 
   // Date validation check
   useEffect(() => {
@@ -118,13 +161,28 @@ export const AddContentModal: React.FC = () => {
         referenceUrl: referenceUrl.trim() || undefined
       });
 
+      // Clear draft upon successful save
+      localStorage.removeItem(DRAFT_KEY);
       setIsAddContentOpen(false);
-    } catch (err) {
-      setErrorMsg('Failed to save content item. Please check network connection.');
+    } catch (err: any) {
+      console.error('Error adding content item:', err);
+      setErrorMsg(`Failed to save content item: ${err?.message || 'Check connection or rules'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Prepare custom select options
+  const storeSelectOptions = stores.map((s) => ({
+    value: s.id,
+    label: s.name // ONLY display store name, no code
+  }));
+
+  const categorySelectOptions = activeCategories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+    color: cat.color
+  }));
 
   return (
     <BottomSheet
@@ -141,23 +199,15 @@ export const AddContentModal: React.FC = () => {
           </div>
         )}
 
-        {/* Store Selection */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-300 mb-1">
-            Store / Brand *
-          </label>
-          <select
-            value={storeId}
-            onChange={(e) => setStoreId(e.target.value)}
-            className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
-          >
-            {stores.map((s) => (
-              <option key={s.id} value={s.id} className="bg-slate-900 text-gray-100 py-1">
-                {s.name} ({s.code})
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Store / Brand Custom Dropdown */}
+        <CustomSelect
+          label="Store / Brand"
+          required
+          options={storeSelectOptions}
+          value={storeId}
+          onChange={setStoreId}
+          placeholder="Select Store / Brand"
+        />
 
         {/* Content Title */}
         <div>
@@ -188,23 +238,18 @@ export const AddContentModal: React.FC = () => {
           />
         </div>
 
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-300 mb-1">
-            Content Category *
-          </label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
-          >
-            {activeCategories.map((cat) => (
-              <option key={cat.id} value={cat.id} className="bg-slate-900 text-gray-100 py-1">
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Content Category Searchable Custom Dropdown */}
+        <CustomSelect
+          label="Content Category"
+          required
+          searchable
+          searchPlaceholder="Search categories..."
+          options={categorySelectOptions}
+          value={categoryId}
+          onChange={setCategoryId}
+          placeholder="Select Content Category"
+        />
+
 
         {/* Multi-Creator Searchable Selection */}
         <div>

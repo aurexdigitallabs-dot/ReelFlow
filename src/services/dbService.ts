@@ -20,6 +20,17 @@ const COLLECTIONS = {
   CONTENT: 'content'
 };
 
+// Utility to strip undefined properties before saving to Firestore
+function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
+  const cleaned: any = {};
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  });
+  return cleaned as T;
+}
+
 export const dbService = {
   // Real-time Store Subscriptions
   subscribeStores(onData: (stores: Store[]) => void): Unsubscribe {
@@ -84,18 +95,18 @@ export const dbService = {
   // Store CRUD
   async addStore(storeData: Omit<Store, 'id' | 'createdAt'>): Promise<string> {
     const newRef = doc(collection(db, COLLECTIONS.STORES));
-    const storeItem: Store = {
+    const storeItem: Store = cleanFirestoreData({
       ...storeData,
       id: newRef.id,
       createdAt: new Date().toISOString()
-    };
+    });
     await setDoc(newRef, storeItem);
     return newRef.id;
   },
 
   async updateStore(id: string, updates: Partial<Store>): Promise<void> {
     const ref = doc(db, COLLECTIONS.STORES, id);
-    await updateDoc(ref, updates);
+    await updateDoc(ref, cleanFirestoreData(updates));
   },
 
   async deleteStore(id: string): Promise<void> {
@@ -106,18 +117,18 @@ export const dbService = {
   // Creator CRUD
   async addCreator(creatorData: Omit<Creator, 'id' | 'createdAt'>): Promise<string> {
     const newRef = doc(collection(db, COLLECTIONS.CREATORS));
-    const creatorItem: Creator = {
+    const creatorItem: Creator = cleanFirestoreData({
       ...creatorData,
       id: newRef.id,
       createdAt: new Date().toISOString()
-    };
+    });
     await setDoc(newRef, creatorItem);
     return newRef.id;
   },
 
   async updateCreator(id: string, updates: Partial<Creator>): Promise<void> {
     const ref = doc(db, COLLECTIONS.CREATORS, id);
-    await updateDoc(ref, updates);
+    await updateDoc(ref, cleanFirestoreData(updates));
   },
 
   async deleteCreator(id: string): Promise<void> {
@@ -128,10 +139,10 @@ export const dbService = {
   // Category CRUD
   async addCategory(catData: Omit<Category, 'id'>): Promise<string> {
     const newRef = doc(collection(db, COLLECTIONS.CATEGORIES));
-    const catItem: Category = {
+    const catItem: Category = cleanFirestoreData({
       ...catData,
       id: newRef.id
-    };
+    });
     await setDoc(newRef, catItem);
     return newRef.id;
   },
@@ -140,28 +151,29 @@ export const dbService = {
   async addContent(contentData: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const newRef = doc(collection(db, COLLECTIONS.CONTENT));
     const now = new Date().toISOString();
-    const contentItem: ContentItem = {
+    const contentItem: ContentItem = cleanFirestoreData({
       ...contentData,
       id: newRef.id,
       createdAt: now,
       updatedAt: now
-    };
+    });
     await setDoc(newRef, contentItem);
     return newRef.id;
   },
 
   async updateContent(id: string, updates: Partial<ContentItem>): Promise<void> {
     const ref = doc(db, COLLECTIONS.CONTENT, id);
-    await updateDoc(ref, {
+    await updateDoc(ref, cleanFirestoreData({
       ...updates,
       updatedAt: new Date().toISOString()
-    });
+    }));
   },
 
   async deleteContent(id: string): Promise<void> {
     const ref = doc(db, COLLECTIONS.CONTENT, id);
     await deleteDoc(ref);
   },
+
 
   async updateShootStatus(id: string, shootStatus: ShootStatus): Promise<void> {
     await this.updateContent(id, { shootStatus });

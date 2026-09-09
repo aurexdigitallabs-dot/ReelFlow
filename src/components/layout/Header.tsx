@@ -81,9 +81,10 @@ export const Header: React.FC = () => {
               <option value="all">All Brands ({visibleStores.length})</option>
               {visibleStores.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} ({s.code})
+                  {s.name}
                 </option>
               ))}
+
               {canAddStore && <option value="__add_new__">+ Add Brand</option>}
             </select>
             <div className="pointer-events-none absolute right-2 text-gray-400 text-[10px]">▼</div>
