@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Creator } from '../../types';
 
 interface CreatorAvatarProps {
@@ -7,6 +7,48 @@ interface CreatorAvatarProps {
   size?: 'sm' | 'md' | 'lg';
   showNames?: boolean;
 }
+
+export const SingleAvatar: React.FC<{
+  name: string;
+  username?: string;
+  profileImage?: string;
+  sizeClass: string;
+  borderClass?: string;
+}> = ({ name, username, profileImage, sizeClass, borderClass = '' }) => {
+  const [imgError, setImgError] = useState(false);
+  const initialLetter = (name || 'U').trim().charAt(0).toUpperCase() || 'U';
+
+  const bgGradients = [
+    'from-indigo-600 to-purple-600',
+    'from-blue-600 to-cyan-600',
+    'from-emerald-600 to-teal-600',
+    'from-rose-600 to-pink-600',
+    'from-purple-600 to-pink-600'
+  ];
+  const charCode = initialLetter.charCodeAt(0) || 0;
+  const gradient = bgGradients[charCode % bgGradients.length];
+
+  return (
+    <div
+      className={`relative inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 font-bold ${sizeClass} ${borderClass}`}
+      title={username ? `${name} (@${username})` : name}
+    >
+      {profileImage && !imgError ? (
+        <img
+          src={profileImage}
+          alt={name}
+          className="w-full h-full object-cover relative z-10"
+          onError={() => setImgError(true)}
+        />
+      ) : null}
+      
+      {/* Fallback Initial Letter Badge */}
+      <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${gradient} text-white font-bold uppercase z-0 shadow-inner`}>
+        {initialLetter}
+      </div>
+    </div>
+  );
+};
 
 export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
   creator,
@@ -31,26 +73,14 @@ export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex -space-x-2 overflow-hidden shrink-0">
           {displayList.map((c, idx) => (
-            <div
+            <SingleAvatar
               key={c.id || idx}
-              className={`relative inline-block rounded-full overflow-hidden bg-slate-700 text-white font-semibold ${sizeMap[size]} ${borderClass}`}
-              title={`${c.name} (@${c.username})`}
-            >
-              {c.profileImage ? (
-                <img
-                  src={c.profileImage}
-                  alt={c.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback on image load error
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-              ) : null}
-              <div className="absolute inset-0 flex items-center justify-center bg-indigo-600 text-white font-bold uppercase -z-10">
-                {c.name.charAt(0)}
-              </div>
-            </div>
+              name={c.name}
+              username={c.username}
+              profileImage={c.profileImage}
+              sizeClass={sizeMap[size]}
+              borderClass={borderClass}
+            />
           ))}
           {extraCount > 0 && (
             <div
@@ -63,7 +93,7 @@ export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
 
         {showNames && (
           <span className="text-xs font-medium text-gray-300 truncate max-w-[90px] xs:max-w-[140px]">
-            {creators.map(c => c.name).join(' + ')}
+            {creators.map((c) => c.name).join(' + ')}
           </span>
         )}
       </div>
@@ -74,32 +104,23 @@ export const CreatorAvatar: React.FC<CreatorAvatarProps> = ({
   if (!creator) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`relative inline-block rounded-full overflow-hidden bg-slate-700 text-white font-semibold shrink-0 ${sizeMap[size]}`}
-        title={`${creator.name} (@${creator.username})`}
-      >
-        {creator.profileImage ? (
-          <img
-            src={creator.profileImage}
-            alt={creator.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
-        ) : null}
-        <div className="absolute inset-0 flex items-center justify-center bg-indigo-600 text-white font-bold uppercase -z-10">
-          {creator.name.charAt(0)}
-        </div>
-      </div>
+    <div className="flex items-center gap-2 min-w-0">
+      <SingleAvatar
+        name={creator.name}
+        username={creator.username}
+        profileImage={creator.profileImage}
+        sizeClass={sizeMap[size]}
+      />
 
       {showNames && (
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-semibold text-gray-200 truncate">{creator.name}</span>
-          <span className="text-[10px] text-gray-400 truncate">@{creator.username}</span>
+          {creator.username && (
+            <span className="text-[10px] text-gray-400 truncate">@{creator.username}</span>
+          )}
         </div>
       )}
     </div>
   );
 };
+

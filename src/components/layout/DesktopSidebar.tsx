@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { ActiveTab } from '../../types';
 import { LoginModal } from '../auth/LoginModal';
+import { SingleAvatar } from '../common/CreatorAvatar';
 import {
   LayoutDashboard,
   Calendar,
@@ -16,6 +17,7 @@ import {
   Building2,
   User
 } from 'lucide-react';
+
 
 export const DesktopSidebar: React.FC = () => {
   const { activeTab, setActiveTab, openAddContent, content, currentStore } = useApp();
@@ -134,6 +136,8 @@ export const DesktopSidebar: React.FC = () => {
         )}
 
         {/* Dedicated User Profile Section */}
+
+
         <div className="mt-auto pt-3 border-t border-slate-800 flex flex-col gap-2">
           <button
             type="button"
@@ -142,9 +146,11 @@ export const DesktopSidebar: React.FC = () => {
             title="Click to manage account & auth roles"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
-                <User className="w-4 h-4" />
-              </div>
+              <SingleAvatar
+                name={userProfile?.displayName || userProfile?.email?.split('@')[0] || 'User'}
+                profileImage={userProfile?.photoURL}
+                sizeClass="w-8 h-8 text-xs"
+              />
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-gray-100 truncate">
                   {userProfile?.displayName || userProfile?.email?.split('@')[0] || 'Sign In'}
@@ -158,6 +164,7 @@ export const DesktopSidebar: React.FC = () => {
               {roleName}
             </span>
           </button>
+
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-1.5 opacity-75 hover:opacity-100 transition-opacity">
