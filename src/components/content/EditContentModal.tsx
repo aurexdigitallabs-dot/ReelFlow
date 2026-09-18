@@ -64,7 +64,7 @@ export const EditContentModal: React.FC = () => {
   // Date validation warning
   useEffect(() => {
     if (shootDate && postDate && postDate < shootDate) {
-      setDateWarning('⚠️ Post date is set BEFORE shoot date.');
+      setDateWarning('Post date is set before shoot date.');
     } else {
       setDateWarning('');
     }
@@ -152,17 +152,17 @@ export const EditContentModal: React.FC = () => {
   }));
 
   const shootStatusOptions = [
-    { value: 'Scheduled', label: '📅 Scheduled' },
-    { value: 'Shot', label: '📸 Shot' },
-    { value: 'Cancelled', label: '❌ Cancelled' }
+    { value: 'Scheduled', label: 'Scheduled' },
+    { value: 'Shot', label: 'Shot' },
+    { value: 'Cancelled', label: 'Cancelled' }
   ];
 
   const postStatusOptions = [
-    { value: 'Pending', label: '⏳ Pending Shoot' },
-    { value: 'Editing', label: '🎬 In Editing' },
-    { value: 'Ready', label: '✅ Ready to Post' },
-    { value: 'Posted', label: '🚀 Published' },
-    { value: 'Cancelled', label: '❌ Cancelled' }
+    { value: 'Pending', label: 'Pending Shoot' },
+    { value: 'Editing', label: 'In Editing' },
+    { value: 'Ready', label: 'Ready to Post' },
+    { value: 'Posted', label: 'Published' },
+    { value: 'Cancelled', label: 'Cancelled' }
   ];
 
   const priorityOptions: Priority[] = ['Low', 'Normal', 'High', 'Urgent'];

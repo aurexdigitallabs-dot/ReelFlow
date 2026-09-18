@@ -7,6 +7,7 @@ import { CreatorAvatar } from '../common/CreatorAvatar';
 import { AlertCircle, Check, Sparkles, Calendar } from 'lucide-react';
 import { INITIAL_CATEGORIES } from '../../data/seedData';
 import { CustomSelect } from '../common/CustomSelect';
+import { useUI } from '../../context/UIContext';
 
 const DRAFT_KEY = 'reelflow_add_content_draft';
 
@@ -21,6 +22,7 @@ export const AddContentModal: React.FC = () => {
     addContent,
     currentStoreId
   } = useApp();
+  const { showToast } = useUI();
 
   const todayStr = getTodayString();
   const activeCategories = categories.length > 0 ? categories : INITIAL_CATEGORIES;
@@ -111,7 +113,7 @@ export const AddContentModal: React.FC = () => {
   // Date validation check
   useEffect(() => {
     if (shootDate && postDate && postDate < shootDate) {
-      setDateWarning('⚠️ Post date is set BEFORE shoot date. Is this intentional?');
+      setDateWarning('Post date is set before shoot date. Is this intentional?');
     } else {
       setDateWarning('');
     }
@@ -163,10 +165,12 @@ export const AddContentModal: React.FC = () => {
 
       // Clear draft upon successful save
       localStorage.removeItem(DRAFT_KEY);
+      showToast('Content reel scheduled successfully!', 'success');
       setIsAddContentOpen(false);
     } catch (err: any) {
       console.error('Error adding content item:', err);
       setErrorMsg(`Failed to save content item: ${err?.message || 'Check connection or rules'}`);
+      showToast('Failed to save content', 'error');
     } finally {
       setIsSubmitting(false);
     }

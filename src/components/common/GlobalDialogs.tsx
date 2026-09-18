@@ -3,10 +3,39 @@ import { useUI } from '../../context/UIContext';
 import { X, AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 
 export const GlobalDialogs: React.FC = () => {
-  const { alertState, confirmState, closeAlert, closeConfirm } = useUI();
+  const { alertState, confirmState, closeAlert, closeConfirm, toasts, removeToast } = useUI();
 
   return (
     <>
+      {/* Floating Toast Notifications */}
+      {toasts.length > 0 && (
+        <div className="fixed top-4 right-4 sm:top-5 sm:right-5 z-[999999] flex flex-col gap-2.5 max-w-sm w-[calc(100vw-32px)] sm:w-auto pointer-events-none">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className="pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-md animate-fade-in transition-all"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                {toast.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+                {toast.type === 'error' && <XCircle className="w-4 h-4 text-rose-400 shrink-0" />}
+                {toast.type === 'info' && <Info className="w-4 h-4 text-indigo-400 shrink-0" />}
+                <p className="text-xs font-semibold text-gray-100 leading-snug break-words">
+                  {toast.message}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeToast(toast.id)}
+                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors shrink-0"
+                title="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Alert Modal */}
       {alertState.isOpen && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">

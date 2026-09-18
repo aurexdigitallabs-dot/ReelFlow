@@ -154,11 +154,46 @@ html, body {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); opacity: 0.9; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-sheet-up {
+  animation: sheetSlideUp 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+/* Touch-action optimization for mobile responsiveness */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Hidden scrollbar utility for clean touch carousels/lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Scroll fade edge mask */
+.scroll-mask-edges {
+  mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+}
+
+/* Minimum 44x44px touch target utility */
+.touch-target-44 {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Custom Premium SaaS Scrollbars */

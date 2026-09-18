@@ -24,7 +24,7 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
   return (
     <div
       onClick={() => onSelect(creator.id)}
-      className="glass-panel p-4 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg transition-all group relative"
+      className="glass-panel p-4 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer hover:border-indigo-500/50 hover:shadow-lg hover:-translate-y-0.5 transition-all group relative"
     >
       {/* Top Header: Avatar, Name, Handle, Status, Edit */}
       <div className="flex items-start justify-between gap-3">
@@ -55,10 +55,10 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
                 e.stopPropagation();
                 onEdit(creator);
               }}
-              className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="touch-target-44 p-1.5 text-gray-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer flex items-center justify-center"
               title="Edit creator profile"
             >
-              <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+              <Edit2 className="w-4 h-4 text-indigo-400" />
             </button>
           )}
 
@@ -77,7 +77,7 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
 
       {/* Bio excerpt if available */}
       {creator.bio && (
-        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">
+        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic break-words">
           "{creator.bio}"
         </p>
       )}
@@ -107,16 +107,16 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
       </div>
 
       {/* Footer Contact & View Profile Link */}
-      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-slate-800/60">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-slate-800/60 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1 truncate pr-2">
           {creator.phone && (
-            <span className="flex items-center gap-1 text-[11px]" title={creator.phone}>
-              <Phone className="w-3 h-3 text-gray-500" /> {creator.phone}
+            <span className="flex items-center gap-1 text-[11px] truncate" title={creator.phone}>
+              <Phone className="w-3 h-3 text-gray-500 shrink-0" /> <span className="truncate">{creator.phone}</span>
             </span>
           )}
         </div>
 
-        <span className="text-xs font-semibold text-indigo-400 group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+        <span className="text-xs font-semibold text-indigo-400 group-hover:translate-x-1 transition-transform flex items-center gap-0.5 shrink-0">
           View Profile <ChevronRight className="w-3.5 h-3.5" />
         </span>
       </div>

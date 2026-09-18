@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
@@ -17,16 +17,23 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   title,
   subtitle,
   children,
-  maxHeight = '85vh'
+  maxHeight = 'calc(100svh - 3rem)'
 }) => {
+  const isBackdropClickRef = useRef(false);
+
+  // Handle escape key and body scroll lock
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+      }
     };
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    }
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
@@ -36,47 +43,79 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   if (!isOpen) return null;
 
   const content = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-      {/* Full Screen Backdrop */}
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+      {/* Full Screen Backdrop with Click Origin Guard */}
       <div
         className="fixed inset-0 bg-slate-950/85 backdrop-blur-md transition-opacity animate-fade-in"
-        onClick={onClose}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) {
+            isBackdropClickRef.current = true;
+          }
+        }}
+        onTouchStart={(e) => {
+          if (e.target === e.currentTarget) {
+            isBackdropClickRef.current = true;
+          }
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isBackdropClickRef.current && e.target === e.currentTarget) {
+            isBackdropClickRef.current = false;
+            onClose();
+          }
+          isBackdropClickRef.current = false;
+        }}
       />
 
-      {/* Sheet / Modal Content - Centered vertically & horizontally */}
+      {/* Sheet / Modal Content - Docks to bottom on mobile, centered modal on tablet/desktop */}
       <div
-        className="relative z-10 w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto animate-slide-up max-h-[85vh] ring-1 ring-white/10"
+        className="relative z-10 w-full sm:max-w-lg bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-sheet-up sm:animate-slide-up ring-1 ring-white/10"
         style={{ maxHeight }}
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => {
+          isBackdropClickRef.current = false;
+          e.stopPropagation();
+        }}
+        onTouchStart={(e) => {
+          isBackdropClickRef.current = false;
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          isBackdropClickRef.current = false;
+          e.stopPropagation();
+        }}
       >
-        {/* Top Handle bar for mobile indicator */}
-        <div className="w-full flex items-center justify-center pt-2 pb-1 sm:hidden shrink-0">
-          <div className="w-12 h-1.5 bg-slate-700 rounded-full" />
+        {/* Drag Handle Indicator for Mobile (Visual only) */}
+        <div className="w-full flex items-center justify-center pt-3 pb-1 sm:hidden shrink-0 pointer-events-none">
+          <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
         </div>
 
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 shrink-0 bg-slate-900">
-            <div>
-              <h3 className="text-base font-bold text-gray-100">{title}</h3>
-              {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 shrink-0 bg-slate-900">
+            <div className="min-w-0 flex-1 pr-2">
+              <h3 className="text-sm sm:text-base font-bold text-gray-100 truncate">{title}</h3>
+              {subtitle && <p className="text-xs text-gray-400 mt-0.5 truncate">{subtitle}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="touch-target-44 p-2 text-gray-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center shrink-0"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         )}
 
-        {/* Body - Clean internal scrolling */}
-        <div className="p-4 overflow-y-auto flex-1">{children}</div>
+        {/* Body - Touch-friendly scrolling with safe bottom padding on mobile */}
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
+          {children}
+        </div>
       </div>
     </div>
   );
 
   return createPortal(content, document.body);
 };
+
 

@@ -50,7 +50,8 @@ service cloud.firestore {
       
       // Admins and Super Admins can add or update creators
       // Individual creators can update their profile image
-      allow create, update: if isAdminOrSuper() || (
+      allow create: if isAuthenticated();
+      allow update: if isAdminOrSuper() || (
         isAuthenticated() && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.creatorId == creatorId
       );

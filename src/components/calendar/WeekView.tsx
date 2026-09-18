@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { getWeekDays, formatDate } from '../../utils/dateUtils';
 import { Camera, Send, Plus } from 'lucide-react';
 import { StatusBadge } from '../common/StatusBadge';
+import { CreatorAvatar } from '../common/CreatorAvatar';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -10,7 +11,7 @@ interface WeekViewProps {
 }
 
 export const WeekView: React.FC<WeekViewProps> = ({ currentDate, onSelectDate }) => {
-  const { filteredContent, openAddContent } = useApp();
+  const { filteredContent, creators, openAddContent } = useApp();
 
   const weekDays = getWeekDays(currentDate);
 
@@ -46,13 +47,13 @@ export const WeekView: React.FC<WeekViewProps> = ({ currentDate, onSelectDate })
 
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400">
-                  {totalItems.length} Content item{totalItems.length !== 1 ? 's' : ''}
+                  {totalItems.length} Item{totalItems.length !== 1 ? 's' : ''}
                 </span>
                 <button
                   type="button"
                   onClick={() => openAddContent({ shootDate: day.dateStr, postDate: day.dateStr })}
-                  className="p-1 text-indigo-400 hover:bg-indigo-600/20 rounded-lg"
-                  title="Add content on this day"
+                  className="touch-target-44 p-1.5 text-indigo-400 hover:bg-indigo-600/20 rounded-xl flex items-center justify-center transition-colors"
+                  title="Schedule content on this day"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -61,46 +62,58 @@ export const WeekView: React.FC<WeekViewProps> = ({ currentDate, onSelectDate })
 
             {/* Shoots & Posts Cards */}
             {totalItems.length === 0 ? (
-              <div className="text-center py-3 text-xs text-gray-500 italic">
+              <div className="text-center py-4 text-xs text-gray-500 italic">
                 No shoots or posts scheduled for this day.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                 {/* Shoots list */}
-                {shoots.map((item) => (
-                  <div
-                    key={`w-shoot-${item.id}`}
-                    onClick={() => onSelectDate(day.dateStr)}
-                    className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start justify-between gap-2 cursor-pointer hover:border-amber-500/50"
-                  >
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
-                        <Camera className="w-3 h-3" /> Shoot Scheduled
-                      </span>
-                      <h5 className="text-xs font-bold text-gray-100 truncate mt-0.5">{item.title}</h5>
-                      <span className="text-[11px] text-gray-400 truncate">{item.concept}</span>
+                {shoots.map((item) => {
+                  const itemCreators = creators.filter((c) => item.creatorIds.includes(c.id));
+                  return (
+                    <div
+                      key={`w-shoot-${item.id}`}
+                      onClick={() => onSelectDate(day.dateStr)}
+                      className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-start justify-between gap-2.5 cursor-pointer hover:border-amber-500/50 transition-colors"
+                    >
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 uppercase tracking-wider">
+                          <Camera className="w-3 h-3" /> Shoot Scheduled
+                        </span>
+                        <h5 className="text-xs font-bold text-gray-100 truncate mt-0.5">{item.title}</h5>
+                        <span className="text-[11px] text-gray-400 truncate">{item.concept}</span>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <CreatorAvatar creators={itemCreators} size="sm" showNames />
+                        </div>
+                      </div>
+                      <StatusBadge type="shoot" status={item.shootStatus} size="sm" />
                     </div>
-                    <StatusBadge type="shoot" status={item.shootStatus} size="sm" />
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Posts list */}
-                {posts.map((item) => (
-                  <div
-                    key={`w-post-${item.id}`}
-                    onClick={() => onSelectDate(day.dateStr)}
-                    className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start justify-between gap-2 cursor-pointer hover:border-indigo-500/50"
-                  >
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] text-indigo-400 font-bold flex items-center gap-1">
-                        <Send className="w-3 h-3" /> Post Scheduled
-                      </span>
-                      <h5 className="text-xs font-bold text-gray-100 truncate mt-0.5">{item.title}</h5>
-                      <span className="text-[11px] text-gray-400 truncate">{item.concept}</span>
+                {posts.map((item) => {
+                  const itemCreators = creators.filter((c) => item.creatorIds.includes(c.id));
+                  return (
+                    <div
+                      key={`w-post-${item.id}`}
+                      onClick={() => onSelectDate(day.dateStr)}
+                      className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-start justify-between gap-2.5 cursor-pointer hover:border-indigo-500/50 transition-colors"
+                    >
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-[10px] text-indigo-400 font-bold flex items-center gap-1 uppercase tracking-wider">
+                          <Send className="w-3 h-3" /> Post Scheduled
+                        </span>
+                        <h5 className="text-xs font-bold text-gray-100 truncate mt-0.5">{item.title}</h5>
+                        <span className="text-[11px] text-gray-400 truncate">{item.concept}</span>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <CreatorAvatar creators={itemCreators} size="sm" showNames />
+                        </div>
+                      </div>
+                      <StatusBadge type="post" status={item.postStatus} size="sm" />
                     </div>
-                    <StatusBadge type="post" status={item.postStatus} size="sm" />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

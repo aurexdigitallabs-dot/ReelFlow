@@ -139,56 +139,62 @@ export const DashboardView: React.FC = () => {
 
       {/* KPI Cards Section */}
       <section className="flex flex-col gap-2.5">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-          Production Pipeline Metrics
-        </h3>
-        <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-6 gap-2.5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            Production Pipeline Metrics
+          </h3>
+          <span className="text-[11px] text-gray-400">
+            {metrics.totalContent} active reels
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
           {/* Total Content */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <Film className="w-3 h-3 text-indigo-400" /> Total
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800 bg-indigo-500/5">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Film className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> Total Reels
             </span>
-            <span className="text-xl font-extrabold text-gray-100 mt-1">{metrics.totalContent}</span>
-          </div>
-
-          {/* Pending Shoot */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <Camera className="w-3 h-3 text-amber-400" /> Pending Shoot
-            </span>
-            <span className="text-xl font-extrabold text-amber-400 mt-1">{metrics.pendingShoot}</span>
-          </div>
-
-          {/* Shot */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Shot
-            </span>
-            <span className="text-xl font-extrabold text-emerald-400 mt-1">{metrics.shot}</span>
-          </div>
-
-          {/* Editing */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <Video className="w-3 h-3 text-blue-400" /> Editing
-            </span>
-            <span className="text-xl font-extrabold text-blue-400 mt-1">{metrics.editing}</span>
+            <span className="text-2xl font-black text-gray-100 mt-2">{metrics.totalContent}</span>
           </div>
 
           {/* Ready to Post */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800 bg-emerald-500/5">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-emerald-400" /> Ready to Post
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-emerald-500/30 bg-emerald-500/10">
+            <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Ready to Post
             </span>
-            <span className="text-xl font-extrabold text-emerald-400 mt-1">{metrics.readyToPost}</span>
+            <span className="text-2xl font-black text-emerald-300 mt-2">{metrics.readyToPost}</span>
+          </div>
+
+          {/* Pending Shoot */}
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Pending Shoot
+            </span>
+            <span className="text-2xl font-black text-amber-400 mt-2">{metrics.pendingShoot}</span>
+          </div>
+
+          {/* Shot */}
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Shot
+            </span>
+            <span className="text-2xl font-black text-emerald-400 mt-2">{metrics.shot}</span>
+          </div>
+
+          {/* Editing */}
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Video className="w-3.5 h-3.5 text-blue-400 shrink-0" /> In Editing
+            </span>
+            <span className="text-2xl font-black text-blue-400 mt-2">{metrics.editing}</span>
           </div>
 
           {/* Posted */}
-          <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-              <Send className="w-3 h-3 text-purple-400" /> Posted
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Published
             </span>
-            <span className="text-xl font-extrabold text-purple-400 mt-1">{metrics.posted}</span>
+            <span className="text-2xl font-black text-purple-400 mt-2">{metrics.posted}</span>
           </div>
         </div>
       </section>
@@ -382,22 +388,24 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Compact Weekly Schedule Bar */}
-        <div className="grid grid-cols-7 gap-1.5 text-center">
-          {weeklySummary.map((day) => (
-            <div
-              key={day.dateStr}
-              onClick={() => setActiveTab('calendar')}
-              className={`p-2 rounded-xl border flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 ${
-                day.isToday
-                  ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold'
-                  : 'bg-slate-900/60 border-slate-800/60 text-gray-300'
-              }`}
-            >
-              <span className="text-[10px] text-gray-400 uppercase">{day.dayName}</span>
-              <span className="text-sm font-extrabold mt-0.5">{day.count}</span>
-              <span className="text-[9px] text-gray-500">items</span>
-            </div>
-          ))}
+        <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+          <div className="grid grid-cols-7 gap-1.5 text-center min-w-[320px] sm:min-w-0">
+            {weeklySummary.map((day) => (
+              <div
+                key={day.dateStr}
+                onClick={() => setActiveTab('calendar')}
+                className={`p-2 rounded-xl border flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                  day.isToday
+                    ? 'bg-indigo-950/60 border-indigo-500 text-indigo-300 font-bold ring-1 ring-indigo-500/40'
+                    : 'bg-slate-900/60 border-slate-800/60 text-gray-300 hover:border-slate-700'
+                }`}
+              >
+                <span className="text-[10px] text-gray-400 uppercase font-bold">{day.dayName}</span>
+                <span className="text-sm sm:text-base font-black mt-0.5">{day.count}</span>
+                <span className="text-[9px] text-gray-500">{day.count === 1 ? 'item' : 'items'}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

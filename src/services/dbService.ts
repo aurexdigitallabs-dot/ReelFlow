@@ -116,14 +116,37 @@ export const dbService = {
 
   // Creator CRUD
   async addCreator(creatorData: Omit<Creator, 'id' | 'createdAt'>): Promise<string> {
-    const newRef = doc(collection(db, COLLECTIONS.CREATORS));
-    const creatorItem: Creator = cleanFirestoreData({
-      ...creatorData,
-      id: newRef.id,
-      createdAt: new Date().toISOString()
+    const avatarLen = creatorData.profileImage ? creatorData.profileImage.length : 0;
+    const isBase64 = creatorData.profileImage?.startsWith('data:');
+    console.log('📝 [dbService.addCreator] Initiating write to Firestore...', {
+      name: creatorData.name,
+      email: creatorData.email,
+      username: creatorData.username,
+      avatarType: isBase64 ? `base64 (${Math.round(avatarLen / 1024)} KB)` : 'URL',
+      storeIds: creatorData.storeIds
     });
-    await setDoc(newRef, creatorItem);
-    return newRef.id;
+
+    try {
+      const newRef = doc(collection(db, COLLECTIONS.CREATORS));
+      const creatorItem: Creator = cleanFirestoreData({
+        ...creatorData,
+        id: newRef.id,
+        createdAt: new Date().toISOString()
+      });
+      
+      console.log('⏳ [dbService.addCreator] Writing to path: creators/' + newRef.id);
+      await setDoc(newRef, creatorItem);
+      console.log('✅ [dbService.addCreator] Successfully saved creator to Firestore with ID:', newRef.id);
+      return newRef.id;
+    } catch (err: any) {
+      console.error('❌ [dbService.addCreator] Firestore rejected write:', {
+        errorCode: err?.code,
+        errorMessage: err?.message,
+        errorName: err?.name,
+        fullError: err
+      });
+      throw err;
+    }
   },
 
   async updateCreator(id: string, updates: Partial<Creator>): Promise<void> {

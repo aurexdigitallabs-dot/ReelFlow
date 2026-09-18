@@ -132,7 +132,7 @@ export const storageService = {
         notifications.push({
           id: `notif-overdue-shoot-${item.id}`,
           type: 'overdue_shoot',
-          title: '⚠️ Shoot Overdue',
+          title: 'Shoot Overdue',
           message: `"${item.title}" shoot was scheduled for ${formatDate(item.shootDate)} but is not shot yet.`,
           contentId: item.id,
           date: item.shootDate,
@@ -145,7 +145,7 @@ export const storageService = {
         notifications.push({
           id: `notif-overdue-post-${item.id}`,
           type: 'overdue_post',
-          title: '⚠️ Posting Overdue',
+          title: 'Posting Overdue',
           message: `"${item.title}" post date (${formatDate(item.postDate)}) passed but is not published.`,
           contentId: item.id,
           date: item.postDate,

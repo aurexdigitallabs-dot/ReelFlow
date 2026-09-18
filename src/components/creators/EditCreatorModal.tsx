@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Creator } from '../../types';
 import { BottomSheet } from '../common/BottomSheet';
-import { AlertCircle, Trash2, Save } from 'lucide-react';
+import { AlertCircle, Trash2, Save, Loader2 } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
 
 interface EditCreatorModalProps {
@@ -12,8 +12,8 @@ interface EditCreatorModalProps {
 }
 
 export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isOpen, onClose }) => {
-  const { stores, updateCreator, deleteCreator } = useApp();
-  const { showConfirm } = useUI();
+  const { stores, updateCreator, deleteCreator, creators } = useApp();
+  const { showConfirm, showToast } = useUI();
 
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -25,11 +25,13 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
   const [selectedStoreIds, setSelectedStoreIds] = useState<string[]>([]);
 
   const [errorMsg, setErrorMsg] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (creator && isOpen) {
       setErrorMsg('');
+      setEmailError('');
       setName(creator.name || '');
       setUsername(creator.username || '');
       setProfileImage(creator.profileImage || '');
@@ -63,6 +65,17 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       return;
     }
 
+    if (emailError) {
+      setErrorMsg('Please fix validation errors before submitting.');
+      return;
+    }
+
+    if (email.trim() && creators.some(c => c.id !== creator.id && c.email?.toLowerCase() === email.trim().toLowerCase())) {
+      setErrorMsg('Another creator with this email already exists.');
+      setEmailError('Another creator with this email already exists.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await updateCreator(creator.id, {
@@ -76,10 +89,12 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
         storeIds: selectedStoreIds
       });
 
+      showToast(`Creator "${name.trim()}" updated successfully!`, 'success');
       onClose();
     } catch (err: any) {
       console.error('Error updating creator:', err);
       setErrorMsg(`Failed to update creator: ${err?.message || 'Check network connection'}`);
+      showToast('Failed to update creator', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -95,10 +110,12 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       onConfirm: async () => {
         try {
           await deleteCreator(creator.id);
+          showToast(`Creator "${creator.name}" deleted.`, 'info');
           onClose();
         } catch (err: any) {
           console.error('Error deleting creator:', err);
           setErrorMsg('Failed to delete creator.');
+          showToast('Failed to delete creator', 'error');
         }
       }
     });
@@ -186,10 +203,26 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const newEmail = e.target.value;
+                setEmail(newEmail);
+                if (newEmail.trim() && creators.some(c => c.id !== creator.id && c.email?.toLowerCase() === newEmail.trim().toLowerCase())) {
+                  setEmailError('Email already exists in roster');
+                } else {
+                  setEmailError('');
+                }
+              }}
               placeholder="alex@reelflow.com"
-              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className={`w-full px-3 py-2 text-xs bg-slate-950 border rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none ${
+                emailError ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-800 focus:border-indigo-500'
+              }`}
             />
+            {emailError && (
+              <p className="text-[10px] text-rose-400 mt-1 pl-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {emailError}
+              </p>
+            )}
           </div>
         </div>
 
@@ -267,7 +300,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
         )}
 
         {/* Buttons */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+        <div className="sticky bottom-0 bg-slate-900 pb-2 flex items-center justify-between gap-3 pt-3 border-t border-slate-800 mt-2 z-10 shadow-[0_-8px_16px_rgba(15,23,42,0.8)]">
           <button
             type="button"
             onClick={handleDelete}
@@ -289,7 +322,15 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
               disabled={isSubmitting}
               className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <Save className="w-3.5 h-3.5" /> {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-3.5 h-3.5" /> Save Changes
+                </>
+              )}
             </button>
           </div>
         </div>

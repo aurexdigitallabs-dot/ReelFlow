@@ -102,40 +102,40 @@ export const CreatorDashboardView: React.FC = () => {
       )}
 
       {/* Creator KPI Metrics */}
-      <section className="grid grid-cols-2 xs:grid-cols-5 gap-2.5">
-        <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-          <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-            <Film className="w-3 h-3 text-indigo-400" /> My Total
+      <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+        <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800 bg-indigo-500/5 col-span-2 sm:col-span-1">
+          <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+            <Film className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> Total Assigned
           </span>
-          <span className="text-xl font-extrabold text-gray-100 mt-1">{totalAssigned}</span>
+          <span className="text-2xl font-black text-gray-100 mt-2">{totalAssigned}</span>
         </div>
 
-        <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-          <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Shot
+        <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+          <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Shot
           </span>
-          <span className="text-xl font-extrabold text-emerald-400 mt-1">{totalShot}</span>
+          <span className="text-2xl font-black text-emerald-400 mt-2">{totalShot}</span>
         </div>
 
-        <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-          <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-            <Video className="w-3 h-3 text-blue-400" /> Editing
+        <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+          <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+            <Video className="w-3.5 h-3.5 text-blue-400 shrink-0" /> In Editing
           </span>
-          <span className="text-xl font-extrabold text-blue-400 mt-1">{totalEditing}</span>
+          <span className="text-2xl font-black text-blue-400 mt-2">{totalEditing}</span>
         </div>
 
-        <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800 bg-emerald-500/5">
-          <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-emerald-400" /> Ready to Post
+        <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-emerald-500/30 bg-emerald-500/10">
+          <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Ready to Post
           </span>
-          <span className="text-xl font-extrabold text-emerald-400 mt-1">{totalReady}</span>
+          <span className="text-2xl font-black text-emerald-300 mt-2">{totalReady}</span>
         </div>
 
-        <div className="glass-panel p-3 rounded-xl flex flex-col justify-between border-slate-800">
-          <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
-            <Send className="w-3 h-3 text-purple-400" /> Published
+        <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
+          <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+            <Send className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Published
           </span>
-          <span className="text-xl font-extrabold text-purple-400 mt-1">{totalPosted}</span>
+          <span className="text-2xl font-black text-purple-400 mt-2">{totalPosted}</span>
         </div>
       </section>
 

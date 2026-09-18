@@ -116,21 +116,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
     setUserProfile(null);
   };
 
-  const rawRole: string = userProfile ? userProfile.role : 'super_admin';
+  const rawRole: string = userProfile ? userProfile.role : 'unassigned';
   const isSuper = rawRole === 'super_admin' || rawRole === 'super';
   const userRole: UserRole = isSuper ? 'super_admin' : (rawRole as UserRole);
 
   const isLoggedIn = !!currentUser && !!userProfile;
-  const isAuthorized = userProfile ? userRole !== 'unassigned' : true;
+  const isAuthorized = isLoggedIn && !!userProfile && userRole !== 'unassigned';
   const userCreatorId = userProfile?.creatorId || null;
   const assignedStoreIds = userProfile?.assignedStoreIds || null;
 
-  // Permission Checks: Allow full permissions in local/demo mode (!currentUser) or for super admins
-  const canAddStore = !currentUser || isSuper;
-  const canManageCreators = !currentUser || isSuper || userRole === 'admin';
+  // Permission Checks: Only authorized logged-in users with appropriate roles have write permissions
+  const canAddStore = isLoggedIn && isSuper;
+  const canManageCreators = isLoggedIn && (isSuper || userRole === 'admin');
 
   const canEditContent = (item: ContentItem): boolean => {
-    if (!currentUser || isSuper) return true;
+    if (!isLoggedIn) return false;
+    if (isSuper) return true;
     if (userRole === 'admin') {
       if (!assignedStoreIds || assignedStoreIds.length === 0) return true;
       return assignedStoreIds.includes(item.storeId);
@@ -139,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
       if (!userCreatorId) return false;
       return item.creatorIds.includes(userCreatorId);
     }
-    return true;
+    return false;
   };
 
   return (

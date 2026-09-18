@@ -16,7 +16,6 @@ import { PendingView } from '../views/PendingView';
 import { AddContentModal } from '../content/AddContentModal';
 import { EditContentModal } from '../content/EditContentModal';
 import { ContentFilterSheet } from '../content/ContentFilterSheet';
-import { NotificationDrawer } from '../notifications/NotificationDrawer';
 import { CreatorDetailModal } from '../creators/CreatorDetailModal';
 
 export const AppLayout: React.FC = () => {
@@ -54,8 +53,10 @@ export const AppLayout: React.FC = () => {
         <DesktopSidebar />
 
         {/* Dynamic Main View Area */}
-        <main className="flex-1 w-full p-4 sm:p-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto min-w-0">
-          {renderActiveView()}
+        <main className="flex-1 w-full px-3.5 py-4 sm:px-5 sm:py-6 lg:px-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto min-w-0">
+          <div className="mx-auto w-full max-w-7xl">
+            {renderActiveView()}
+          </div>
         </main>
       </div>
 
@@ -66,7 +67,6 @@ export const AppLayout: React.FC = () => {
       <AddContentModal />
       <EditContentModal />
       <ContentFilterSheet />
-      <NotificationDrawer />
 
       {/* Creator Detail Profile Modal */}
       {selectedCreatorId && (

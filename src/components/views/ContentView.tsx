@@ -163,12 +163,12 @@ export const ContentView: React.FC = () => {
       ) : viewStyle === 'list' ? (
         <div className="flex flex-col gap-3">
           {filteredContent.map((item) => (
-            <ContentCard key={item.id} content={item} />
+            <ContentCard key={item.id} content={item} variant="list" />
           ))}
         </div>
       ) : (
         /* Kanban Pipeline Board */
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto pb-4">
+        <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 no-scrollbar">
           {pipelineColumns.map((col) => {
             const colItems = filteredContent.filter((i) => i.postStatus === col.status);
             return (

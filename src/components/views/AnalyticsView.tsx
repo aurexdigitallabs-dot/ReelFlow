@@ -71,47 +71,47 @@ export const AnalyticsView: React.FC = () => {
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
           {range === 'weekly' ? 'This Week Performance Overview' : 'This Month Performance Overview'}
         </h3>
-        <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
-          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <Film className="w-3 h-3 text-indigo-400" /> Total Content
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800 bg-indigo-500/5">
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Film className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> Total Content
             </span>
-            <span className="text-2xl font-extrabold text-gray-100 mt-1">{overview.totalContent}</span>
+            <span className="text-2xl font-black text-gray-100 mt-2">{overview.totalContent}</span>
+          </div>
+
+          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-emerald-500/30 bg-emerald-500/10">
+            <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Ready to Post
+            </span>
+            <span className="text-2xl font-black text-emerald-300 mt-2">{overview.readyToPost}</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <Camera className="w-3 h-3 text-amber-400" /> Pending Shoot
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Pending Shoot
             </span>
-            <span className="text-2xl font-extrabold text-amber-400 mt-1">{overview.pendingShoot}</span>
+            <span className="text-2xl font-black text-amber-400 mt-2">{overview.pendingShoot}</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Total Shot
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Total Shot
             </span>
-            <span className="text-2xl font-extrabold text-emerald-400 mt-1">{overview.shot}</span>
+            <span className="text-2xl font-black text-emerald-400 mt-2">{overview.shot}</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <Video className="w-3 h-3 text-blue-400" /> In Editing
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Video className="w-3.5 h-3.5 text-blue-400 shrink-0" /> In Editing
             </span>
-            <span className="text-2xl font-extrabold text-blue-400 mt-1">{overview.editing}</span>
-          </div>
-
-          <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800 bg-emerald-500/5">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-emerald-400" /> Ready to Post
-            </span>
-            <span className="text-2xl font-extrabold text-emerald-400 mt-1">{overview.readyToPost}</span>
+            <span className="text-2xl font-black text-blue-400 mt-2">{overview.editing}</span>
           </div>
 
           <div className="glass-panel p-3.5 rounded-2xl flex flex-col justify-between border-slate-800">
-            <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
-              <Send className="w-3 h-3 text-purple-400" /> Published
+            <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Published
             </span>
-            <span className="text-2xl font-extrabold text-purple-400 mt-1">{overview.posted}</span>
+            <span className="text-2xl font-black text-purple-400 mt-2">{overview.posted}</span>
           </div>
         </div>
       </section>
@@ -236,19 +236,63 @@ export const AnalyticsView: React.FC = () => {
         </div>
       </section>
 
-      {/* Creator Analytics Table */}
+      {/* Creator Analytics Section - Dual responsive: Cards on Mobile, Table on Tablet/Desktop */}
       <section className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
           <div>
             <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
-              <Users className="w-4 h-4 text-indigo-400" /> Creator-wise Content Contribution
+              <Users className="w-4 h-4 text-indigo-400" /> Creator Contribution
             </h3>
-            <p className="text-[11px] text-gray-400">Total assigned, shot, editing, ready to post, and published</p>
+            <p className="text-[11px] text-gray-400">Assignment breakdown and completion rates per creator</p>
           </div>
-          <Award className="w-5 h-5 text-amber-400" />
+          <Award className="w-5 h-5 text-amber-400 shrink-0" />
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View (< sm): Touch Cards */}
+        <div className="sm:hidden flex flex-col gap-2.5">
+          {creatorData.map((c) => (
+            <div
+              key={`mobile-creator-${c.creatorId}`}
+              onClick={() => setSelectedCreatorId(c.creatorId)}
+              className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2.5 cursor-pointer active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CreatorAvatar creator={creators.find((cr) => cr.id === c.creatorId)} size="sm" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-bold text-xs text-gray-100 truncate">{c.creatorName}</span>
+                    <span className="text-[10px] text-gray-400 truncate">@{c.username}</span>
+                  </div>
+                </div>
+                <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-bold shrink-0">
+                  {c.completionRate}% Done
+                </span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1.5 text-center bg-slate-900/80 p-2 rounded-xl border border-slate-800/80">
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-gray-400 uppercase">Assigned</span>
+                  <span className="text-xs font-bold text-gray-200">{c.assignedCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-amber-400 uppercase">Shot</span>
+                  <span className="text-xs font-bold text-emerald-400">{c.shotCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-blue-400 uppercase">Edit</span>
+                  <span className="text-xs font-bold text-blue-400">{c.editingCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-purple-400 uppercase">Posted</span>
+                  <span className="text-xs font-bold text-purple-400">{c.postedCount}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop / Tablet View (>= sm): Full Table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-300 border-collapse">
             <thead>
               <tr className="border-b border-slate-800 text-[10px] uppercase font-bold text-gray-400">
