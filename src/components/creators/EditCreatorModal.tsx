@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Creator } from '../../types';
 import { BottomSheet } from '../common/BottomSheet';
-import { AlertCircle, Trash2, Save, Loader2 } from 'lucide-react';
+import { AlertCircle, Trash2, Save, Loader2, UploadCloud, X } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
+import { r2Service } from '../../services/r2Service';
 
 interface EditCreatorModalProps {
   creator: Creator | null;
@@ -27,6 +28,9 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
   const [errorMsg, setErrorMsg] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [uploadStatus, setUploadStatus] = useState<string>('');
 
   useEffect(() => {
     if (creator && isOpen) {
@@ -40,8 +44,30 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       setBio(creator.bio || '');
       setStatus(creator.status || 'Active');
       setSelectedStoreIds(creator.storeIds || []);
+      setAvatarFile(null);
+      setPreviewUrl('');
+      setUploadStatus('');
     }
   }, [creator, isOpen]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMsg('Image must be less than 5MB');
+        return;
+      }
+      setAvatarFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setErrorMsg('');
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setAvatarFile(null);
+    setPreviewUrl('');
+    setProfileImage('');
+  };
 
   const toggleStore = (sId: string) => {
     if (selectedStoreIds.includes(sId)) {
@@ -78,10 +104,17 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
 
     setIsSubmitting(true);
     try {
+      let finalAvatarUrl = profileImage.trim();
+
+      if (avatarFile) {
+        setUploadStatus('Uploading new profile image...');
+        finalAvatarUrl = await r2Service.uploadFile(avatarFile, 'creators');
+      }
+
       await updateCreator(creator.id, {
         name: name.trim(),
         username: username.trim().replace(/^@/, ''),
-        profileImage: profileImage.trim() || undefined,
+        profileImage: finalAvatarUrl || undefined,
         phone: phone.trim(),
         email: email.trim(),
         bio: bio.trim(),
@@ -97,6 +130,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       showToast('Failed to update creator', 'error');
     } finally {
       setIsSubmitting(false);
+      setUploadStatus('');
     }
   };
 
@@ -155,7 +189,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> {uploadStatus || 'Saving...'}
                 </>
               ) : (
                 <>
@@ -205,18 +239,89 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
           />
         </div>
 
-        {/* Profile Image URL */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-300 mb-1">
-            Profile Image URL (Optional)
+        {/* Profile Image Upload & Preview Section */}
+        <div className="flex flex-col gap-2 p-3.5 bg-slate-950/60 border border-slate-800 rounded-2xl">
+          <label className="block text-xs font-semibold text-gray-300">
+            Profile Photo
           </label>
-          <input
-            type="url"
-            value={profileImage}
-            onChange={(e) => setProfileImage(e.target.value)}
-            placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-          />
+          
+          <div className="flex items-center gap-3.5">
+            {/* Avatar Preview */}
+            <div className="relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden border border-slate-700 bg-slate-900 shadow-inner flex items-center justify-center group">
+              {previewUrl || profileImage ? (
+                <img
+                  src={previewUrl || profileImage}
+                  alt={name || 'Creator'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-600/30 to-purple-600/30 text-indigo-300 font-bold text-lg">
+                  {name.charAt(0)?.toUpperCase() || '?'}
+                </div>
+              )}
+
+              {(previewUrl || profileImage) && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  title="Remove photo"
+                  className="absolute inset-0 bg-slate-950/70 text-rose-400 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Upload Controls */}
+            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <label
+                  htmlFor="edit-creator-photo-upload"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 hover:text-indigo-200 text-xs font-semibold rounded-xl cursor-pointer transition-all active:scale-95 w-fit"
+                >
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  {previewUrl || profileImage ? 'Change Photo' : 'Upload New Photo'}
+                </label>
+                <input
+                  id="edit-creator-photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {(previewUrl || profileImage) && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-400 text-xs font-medium rounded-xl transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3" /> Remove
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-400 truncate">
+                {avatarFile ? avatarFile.name : 'Square image recommended (Max 5MB)'}
+              </p>
+            </div>
+          </div>
+
+          {/* Or Image URL Input */}
+          <div className="mt-1 pt-2 border-t border-slate-900">
+            <label className="block text-[10px] font-medium text-gray-400 mb-1">
+              Or paste direct Image URL
+            </label>
+            <input
+              type="url"
+              value={profileImage}
+              onChange={(e) => {
+                setProfileImage(e.target.value);
+                if (e.target.value) setAvatarFile(null);
+              }}
+              placeholder="https://images.unsplash.com/..."
+              className="w-full px-3 py-1.5 text-xs bg-slate-900/80 border border-slate-800 rounded-xl text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
         </div>
 
         {/* Phone & Email */}
