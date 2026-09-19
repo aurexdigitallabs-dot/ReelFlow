@@ -130,6 +130,19 @@ export const BrandAdminsModal: React.FC<BrandAdminsModalProps> = ({ isOpen, onCl
     });
   };
 
+  const handleToggleAdminOnboarded = async (admin: BrandAdmin) => {
+    try {
+      const newStatus = !admin.onboarded;
+      await updateBrandAdmin(admin.id, { onboarded: newStatus });
+      showToast(
+        `Brand Admin ${admin.name} ${newStatus ? 'marked as Onboarded' : 'marked as Onboarding Pending'}.`,
+        'success'
+      );
+    } catch {
+      showToast('Failed to update onboarding status.', 'error');
+    }
+  };
+
   const handleSendInvite = async (admin: BrandAdmin) => {
     setSendingEmailId(admin.id);
     try {
@@ -387,38 +400,46 @@ export const BrandAdminsModal: React.FC<BrandAdminsModalProps> = ({ isOpen, onCl
 
                   {/* Onboarding Status & Email Invite Action */}
                   <div className="flex items-center justify-between pt-1">
-                    {admin.onboarded ? (
-                      <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
-                        <UserCheck className="w-3 h-3" /> Account Onboarded
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        <span className="text-[10px] text-amber-300 font-medium">
-                          Onboarding Pending
-                        </span>
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAdminOnboarded(admin)}
+                      title="Click to toggle Onboarding Status"
+                      className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
+                        admin.onboarded
+                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+                          : 'text-amber-300 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'
+                      }`}
+                    >
+                      {admin.onboarded ? (
+                        <>
+                          <UserCheck className="w-3 h-3 text-emerald-400" /> Account Onboarded
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                          <span>Onboarding Pending</span>
+                        </>
+                      )}
+                    </button>
 
-                    {!admin.onboarded && (
-                      <button
-                        type="button"
-                        disabled={isSending}
-                        onClick={() => handleSendInvite(admin)}
-                        className="px-2.5 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm shadow-indigo-600/30 active:scale-95 disabled:opacity-50 cursor-pointer"
-                        title={`Send onboarding invite email to ${admin.email}`}
-                      >
-                        {isSending ? (
-                          <>
-                            <Loader2 className="w-3 h-3 animate-spin" /> Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Mail className="w-3 h-3" /> Send Invite Email
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      disabled={isSending}
+                      onClick={() => handleSendInvite(admin)}
+                      className="px-2.5 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm shadow-indigo-600/30 active:scale-95 disabled:opacity-50 cursor-pointer"
+                      title={`Send onboarding invite email to ${admin.email}`}
+                    >
+                      {isSending ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" /> Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-3 h-3" />
+                          <span>{admin.onboarded ? 'Re-send Invite' : 'Send Invite Email'}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               );

@@ -12,9 +12,27 @@ interface CreatorCardProps {
 }
 
 export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onEdit }) => {
-  const { content, sendCreatorOnboardingEmail } = useApp();
+  const { content, sendCreatorOnboardingEmail, updateCreator } = useApp();
   const { showToast } = useUI();
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleToggleOnboarded = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsToggling(true);
+    try {
+      const newStatus = !creator.onboarded;
+      await updateCreator(creator.id, { onboarded: newStatus });
+      showToast(
+        `${creator.name} ${newStatus ? 'marked as Onboarded' : 'marked as Onboarding Pending'}`,
+        'success'
+      );
+    } catch {
+      showToast('Failed to update status', 'error');
+    } finally {
+      setIsToggling(false);
+    }
+  };
 
   // Derived content counts for this creator
   const assignedItems = content.filter((item) => item.creatorIds.includes(creator.id));
@@ -117,10 +135,20 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
           onClick={(e) => e.stopPropagation()}
           className="flex items-center justify-between gap-2 px-2.5 py-2 bg-amber-500/10 border border-amber-500/25 rounded-xl transition-all"
         >
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+          <button
+            type="button"
+            disabled={isToggling}
+            onClick={handleToggleOnboarded}
+            className="flex items-center gap-1.5 min-w-0 text-left cursor-pointer hover:opacity-80 transition-opacity"
+            title="Click to mark as Onboarded"
+          >
+            {isToggling ? (
+              <Loader2 className="w-3 h-3 animate-spin text-amber-400 shrink-0" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            )}
             <span className="text-[11px] font-medium text-amber-300 truncate">Onboarding Pending</span>
-          </div>
+          </button>
           <button
             type="button"
             disabled={isSendingInvite}
@@ -142,9 +170,24 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-1.5 text-[10px] text-emerald-400/90 font-medium px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg w-fit">
-          <UserCheck className="w-3 h-3 text-emerald-400" />
-          <span>Account Onboarded</span>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center justify-between gap-2"
+        >
+          <button
+            type="button"
+            disabled={isToggling}
+            onClick={handleToggleOnboarded}
+            title="Click to toggle status"
+            className="flex items-center gap-1.5 text-[10px] text-emerald-400/90 font-medium px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors cursor-pointer"
+          >
+            {isToggling ? (
+              <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
+            ) : (
+              <UserCheck className="w-3 h-3 text-emerald-400" />
+            )}
+            <span>Account Onboarded</span>
+          </button>
         </div>
       )}
 

@@ -114,6 +114,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, positio
               </span>
             </div>
 
+            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+              <span className="text-[10px] text-gray-400">Onboarding Status</span>
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" /> Active & Onboarded
+              </span>
+            </div>
+
             <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
               <span className="text-[10px] text-gray-500 font-mono">UID: {userProfile.uid?.slice(0, 8)}...</span>
               <button
