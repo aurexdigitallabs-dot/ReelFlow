@@ -5,7 +5,7 @@ import { AlertTriangle, Clock, Sparkles, Bell, X, ChevronRight, Calendar } from 
 type NotifFilter = 'all' | 'overdue' | 'today';
 
 export const NotificationDrawer: React.FC = () => {
-  const { isNotificationsOpen, setIsNotificationsOpen, notifications, content, openEditContent } = useApp();
+  const { isNotificationsOpen, setIsNotificationsOpen, notifications, content, openEditContent, markNotificationAsRead } = useApp();
   const drawerRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<NotifFilter>('all');
 
@@ -38,9 +38,10 @@ export const NotificationDrawer: React.FC = () => {
     return true;
   });
 
-  const handleNotificationClick = (contentId?: string) => {
-    if (!contentId) return;
-    const target = content.find((c) => c.id === contentId);
+  const handleNotificationClick = (notif: typeof notifications[0]) => {
+    if (!notif.contentId) return;
+    markNotificationAsRead(notif.id);
+    const target = content.find((c) => c.id === notif.contentId);
     if (target) {
       setIsNotificationsOpen(false);
       openEditContent(target);
@@ -124,8 +125,10 @@ export const NotificationDrawer: React.FC = () => {
               return (
                 <div
                   key={notif.id}
-                  onClick={() => handleNotificationClick(notif.contentId)}
-                  className={`p-3 rounded-xl border flex items-start gap-2.5 transition-all text-xs cursor-pointer hover:border-indigo-500/50 hover:scale-[1.01] active:scale-[0.99] group ${
+                  onClick={() => handleNotificationClick(notif)}
+                  className={`relative p-3 rounded-xl border flex items-start gap-2.5 transition-all text-xs cursor-pointer hover:border-indigo-500/50 hover:scale-[1.01] active:scale-[0.99] group ${
+                    notif.read ? 'opacity-60 grayscale-[50%]' : ''
+                  } ${
                     isOverdue
                       ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                       : isReady
@@ -133,6 +136,9 @@ export const NotificationDrawer: React.FC = () => {
                       : 'bg-slate-950 border-slate-800 text-gray-300'
                   }`}
                 >
+                  {!notif.read && (
+                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-slate-900" />
+                  )}
                   {isOverdue ? (
                     <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                   ) : isReady ? (
@@ -141,7 +147,7 @@ export const NotificationDrawer: React.FC = () => {
                     <Clock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   )}
 
-                  <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex flex-col min-w-0 flex-1 pr-3">
                     <div className="flex items-center justify-between gap-1">
                       <h5 className="font-bold text-xs truncate">{notif.title}</h5>
                       {notif.contentId && (

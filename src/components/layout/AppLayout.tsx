@@ -12,6 +12,8 @@ import { ContentView } from '../views/ContentView';
 import { CreatorsView } from '../views/CreatorsView';
 import { AnalyticsView } from '../views/AnalyticsView';
 import { PendingView } from '../views/PendingView';
+import { EmailPreviewView } from '../views/EmailPreviewView';
+import { BrandKitView } from '../views/BrandKitView';
 
 import { AddContentModal } from '../content/AddContentModal';
 import { EditContentModal } from '../content/EditContentModal';
@@ -19,7 +21,13 @@ import { ContentFilterSheet } from '../content/ContentFilterSheet';
 import { CreatorDetailModal } from '../creators/CreatorDetailModal';
 
 export const AppLayout: React.FC = () => {
-  const { activeTab, selectedCreatorId, setSelectedCreatorId } = useApp();
+  const { activeTab, setActiveTab, currentStoreId, selectedCreatorId, setSelectedCreatorId } = useApp();
+
+  React.useEffect(() => {
+    if (currentStoreId === 'all' && activeTab === 'brand_kit') {
+      setActiveTab('dashboard');
+    }
+  }, [currentStoreId, activeTab, setActiveTab]);
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -37,6 +45,10 @@ export const AppLayout: React.FC = () => {
         return <AnalyticsView />;
       case 'pending':
         return <PendingView />;
+      case 'email_preview':
+        return <EmailPreviewView />;
+      case 'brand_kit':
+        return <BrandKitView />;
       default:
         return <DashboardView />;
     }

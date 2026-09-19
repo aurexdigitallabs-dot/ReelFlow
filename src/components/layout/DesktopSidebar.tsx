@@ -15,13 +15,15 @@ import {
   Sparkles,
   UserCheck,
   Building2,
-  User
+  User,
+  Palette,
+  Mail
 } from 'lucide-react';
 
 
 export const DesktopSidebar: React.FC = () => {
   const { activeTab, setActiveTab, openAddContent, content, currentStore } = useApp();
-  const { userProfile, userRole, assignedStoreIds } = useAuth();
+  const { userProfile, userRole, assignedStoreIds, canAddContent } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const readyCount = content.filter((i) => i.postStatus === 'Ready').length;
@@ -47,12 +49,13 @@ export const DesktopSidebar: React.FC = () => {
       ? 'Admin'
       : 'Creator';
 
-  const navItems: { tab: ActiveTab; label: string; icon: React.ReactNode; count?: number }[] = isCreatorRole
+  const navItems = (isCreatorRole
     ? [
         { tab: 'my_assignments', label: 'My Assignments', icon: <UserCheck className="w-4 h-4 text-emerald-400" /> },
-        { tab: 'dashboard', label: 'Agency Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+        { tab: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
         { tab: 'calendar', label: 'Calendar', icon: <Calendar className="w-4 h-4" /> },
         { tab: 'content', label: 'All Content', icon: <Film className="w-4 h-4" /> },
+        { tab: 'brand_kit', label: 'Brand Kit', icon: <Palette className="w-4 h-4" /> },
         { tab: 'pending', label: 'Pending & Ready', icon: <Clock className="w-4 h-4" />, count: readyCount }
       ]
     : [
@@ -61,8 +64,15 @@ export const DesktopSidebar: React.FC = () => {
         { tab: 'content', label: 'All Content', icon: <Film className="w-4 h-4" /> },
         { tab: 'pending', label: 'Pending & Ready', icon: <Clock className="w-4 h-4" />, count: readyCount },
         { tab: 'creators', label: 'Creators', icon: <Users className="w-4 h-4" /> },
-        { tab: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> }
-      ];
+        { tab: 'brand_kit', label: 'Brand Kit', icon: <Palette className="w-4 h-4" /> },
+        { tab: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
+        { tab: 'email_preview', label: 'Email Templates', icon: <Mail className="w-4 h-4" /> }
+      ] as { tab: ActiveTab; label: string; icon: React.ReactNode; count?: number }[]).filter(item => {
+        if (item.tab === 'brand_kit') {
+          return currentStore !== null; // Only show if a specific store is selected
+        }
+        return true;
+      });
 
   return (
     <>
@@ -84,14 +94,16 @@ export const DesktopSidebar: React.FC = () => {
         </div>
 
         {/* Primary + Create Content Button */}
-        <button
-          type="button"
-          onClick={() => openAddContent()}
-          className="w-full py-2.5 px-4 mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
-        >
-          <Plus className="w-4 h-4" />
-          Create Content
-        </button>
+        {canAddContent && (
+          <button
+            type="button"
+            onClick={() => openAddContent()}
+            className="w-full py-2.5 px-4 mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+          >
+            <Plus className="w-4 h-4" />
+            Create Content
+          </button>
+        )}
 
         {/* Navigation Links */}
         <div className="flex flex-col gap-1 flex-1">
@@ -104,7 +116,7 @@ export const DesktopSidebar: React.FC = () => {
               <button
                 key={item.tab}
                 type="button"
-                onClick={() => setActiveTab(item.tab)}
+                onClick={() => setActiveTab(item.tab as ActiveTab)}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                   isActive
                     ? 'bg-indigo-600/20 text-indigo-400 font-semibold border border-indigo-500/30'

@@ -6,7 +6,7 @@ export type Priority = 'Low' | 'Normal' | 'High' | 'Urgent';
 
 export type ViewMode = 'landing' | 'app';
 
-export type ActiveTab = 'dashboard' | 'calendar' | 'content' | 'creators' | 'analytics' | 'pending' | 'my_assignments';
+export type ActiveTab = 'dashboard' | 'calendar' | 'content' | 'creators' | 'analytics' | 'brand_kit' | 'pending' | 'my_assignments' | 'email_preview';
 
 export type CalendarViewMode = 'month' | 'week' | 'list';
 
@@ -24,6 +24,36 @@ export interface UserProfile {
   updatedAt?: string;
 }
 
+export interface BrandLogo {
+  url: string;
+  variant: string;
+}
+
+export interface BrandFont {
+  name: string;
+  url?: string;
+}
+
+export interface SocialHandle {
+  platform: string;
+  url: string;
+}
+
+export interface ContactInfo {
+  email: string;
+  mobileNumber: string;
+  address: string;
+}
+
+export interface BrandKit {
+  logos: BrandLogo[];
+  fonts: BrandFont[];
+  website?: string;
+  socialHandles?: SocialHandle[];
+  contactInfo?: ContactInfo | string;
+  instructions?: string;
+}
+
 export interface Store {
   id: string;
   name: string;
@@ -31,6 +61,7 @@ export interface Store {
   logo: string;
   primaryColor: string;
   status: 'Active' | 'Inactive';
+  brandKit?: BrandKit;
   createdAt: string;
 }
 
@@ -44,6 +75,8 @@ export interface Creator {
   email: string;
   status: 'Active' | 'Inactive';
   bio?: string;
+  instagramId?: string;
+  genre?: string;
   createdAt: string;
 }
 

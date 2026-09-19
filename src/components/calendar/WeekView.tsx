@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { getWeekDays, formatDate } from '../../utils/dateUtils';
 import { Camera, Send, Plus } from 'lucide-react';
 import { StatusBadge } from '../common/StatusBadge';
@@ -12,6 +13,7 @@ interface WeekViewProps {
 
 export const WeekView: React.FC<WeekViewProps> = ({ currentDate, onSelectDate }) => {
   const { filteredContent, creators, openAddContent } = useApp();
+  const { canAddContent } = useAuth();
 
   const weekDays = getWeekDays(currentDate);
 
@@ -49,14 +51,16 @@ export const WeekView: React.FC<WeekViewProps> = ({ currentDate, onSelectDate })
                 <span className="text-xs text-gray-400">
                   {totalItems.length} Item{totalItems.length !== 1 ? 's' : ''}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => openAddContent({ shootDate: day.dateStr, postDate: day.dateStr })}
-                  className="touch-target-44 p-1.5 text-indigo-400 hover:bg-indigo-600/20 rounded-xl flex items-center justify-center transition-colors"
-                  title="Schedule content on this day"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+                {canAddContent && (
+                  <button
+                    type="button"
+                    onClick={() => openAddContent({ shootDate: day.dateStr })}
+                    className="touch-target-44 p-1.5 text-indigo-400 hover:bg-indigo-600/20 rounded-xl flex items-center justify-center transition-colors"
+                    title="Schedule content on this day"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
 

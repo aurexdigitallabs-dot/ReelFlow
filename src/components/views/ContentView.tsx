@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { ContentCard } from '../content/ContentCard';
 import { SearchInput } from '../common/SearchInput';
 import { ContentItem, PostStatus } from '../../types';
@@ -7,6 +8,7 @@ import { Filter, LayoutGrid, List, Columns, Plus, RotateCcw, Search } from 'luci
 import { CardSkeleton, HeaderSkeleton } from '../common/Skeletons';
 
 export const ContentView: React.FC = () => {
+  const { canAddContent } = useAuth();
   const {
     filteredContent,
     filters,
@@ -57,13 +59,15 @@ export const ContentView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => openAddContent()}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 cursor-pointer active:scale-95 transition-transform"
-        >
-          <Plus className="w-4 h-4" /> Create Content
-        </button>
+        {canAddContent && (
+          <button
+            type="button"
+            onClick={() => openAddContent()}
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 cursor-pointer active:scale-95 transition-transform"
+          >
+            <Plus className="w-4 h-4" /> Create Content
+          </button>
+        )}
       </header>
 
       {/* Search & Filter Toolbar */}

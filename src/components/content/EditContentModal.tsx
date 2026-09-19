@@ -79,6 +79,18 @@ export const EditContentModal: React.FC = () => {
     }
   };
 
+  const handleShootDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setShootDate(val);
+    if (val) {
+      const dateObj = new Date(val);
+      if (!isNaN(dateObj.getTime())) {
+        dateObj.setDate(dateObj.getDate() + 1);
+        setPostDate(dateObj.toISOString().split('T')[0]);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingContent || isSubmitting) return;
@@ -287,13 +299,13 @@ export const EditContentModal: React.FC = () => {
             <label className="block text-xs font-semibold text-gray-300 mb-1">
               Shoot Date *
             </label>
-            <input
-              type="date"
-              required
-              value={shootDate}
-              onChange={(e) => setShootDate(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500"
-            />
+              <input
+                type="date"
+                required
+                value={shootDate}
+                onChange={handleShootDateChange}
+                className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500"
+              />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-300 mb-1">

@@ -178,8 +178,50 @@ export const AddCreatorModal: React.FC<AddCreatorModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} title="Add New Creator" subtitle="Add a social media creator to your agency roster">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 text-xs">
+    <BottomSheet 
+      isOpen={isOpen} 
+      onClose={handleClose} 
+      title="Add New Creator" 
+      subtitle="Add a social media creator to your agency roster"
+      footer={
+        <div className="flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="add-creator-form"
+            disabled={isSubmitting || isSuccess || !!emailError}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
+              isSuccess
+                ? 'bg-emerald-600 text-white shadow-emerald-600/30'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-600/30 disabled:opacity-60'
+            }`}
+          >
+            {isSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-white" /> Saved!
+              </>
+            ) : isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span>{submitStatus || 'Saving...'}</span>
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" /> Save Creator
+              </>
+            )}
+          </button>
+        </div>
+      }
+    >
+      <form id="add-creator-form" onSubmit={handleSubmit} className="flex flex-col gap-3.5 text-xs">
         {errorMsg && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
@@ -289,41 +331,6 @@ export const AddCreatorModal: React.FC<AddCreatorModalProps> = ({ isOpen, onClos
           />
         </div>
 
-        {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-slate-900 pb-2 flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 mt-2 z-10 shadow-[0_-8px_16px_rgba(15,23,42,0.8)]">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || isSuccess}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
-              isSuccess
-                ? 'bg-emerald-600 text-white shadow-emerald-600/30'
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-600/30 disabled:opacity-60'
-            }`}
-          >
-            {isSuccess ? (
-              <>
-                <Check className="w-4 h-4 text-white" /> Saved!
-              </>
-            ) : isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
-                <span>{submitStatus || 'Saving...'}</span>
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4" /> Save Creator
-              </>
-            )}
-          </button>
-        </div>
       </form>
     </BottomSheet>
   );

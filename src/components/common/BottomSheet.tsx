@@ -9,6 +9,7 @@ interface BottomSheetProps {
   subtitle?: string;
   children: React.ReactNode;
   maxHeight?: string;
+  footer?: React.ReactNode;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -17,7 +18,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   title,
   subtitle,
   children,
-  maxHeight = 'calc(100svh - 3rem)'
+  maxHeight = 'calc(100svh - 3rem)',
+  footer
 }) => {
   const isBackdropClickRef = useRef(false);
 
@@ -107,10 +109,17 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           </div>
         )}
 
-        {/* Body - Touch-friendly scrolling with safe bottom padding on mobile */}
-        <div className="p-4 sm:p-5 overflow-y-auto flex-1 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
+        {/* Body - Touch-friendly scrolling with safe bottom padding on mobile if no footer */}
+        <div className={`p-4 sm:p-5 overflow-y-auto flex-1 ${footer ? '' : 'pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]'}`}>
           {children}
         </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="px-4 py-3 sm:px-5 sm:py-4 border-t border-slate-800 bg-slate-900 pb-[max(1rem,calc(env(safe-area-inset-bottom)+0.75rem))] shrink-0 z-20">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

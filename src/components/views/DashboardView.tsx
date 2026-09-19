@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { calculateOverviewMetrics } from '../../utils/analyticsUtils';
 import { getTodayString, getWeekDays, formatDate } from '../../utils/dateUtils';
 import { ContentCard } from '../content/ContentCard';
@@ -18,12 +19,17 @@ import {
   List,
   LayoutGrid,
   Maximize2,
-  Minimize2
+  Minimize2,
+  PieChart as PieChartIcon,
+  BarChart as BarChartIcon
 } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Loader } from '../common/Loader';
 
 export const DashboardView: React.FC = () => {
+  const { canAddContent } = useAuth();
   const {
+    creators,
     filteredContent,
     openAddContent,
     setActiveTab,
@@ -107,13 +113,15 @@ export const DashboardView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => openAddContent()}
-          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 shrink-0 transition-transform active:scale-95 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Quick Add Content
-        </button>
+        {canAddContent && (
+          <button
+            type="button"
+            onClick={() => openAddContent()}
+            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 shrink-0 transition-transform active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Quick Add Content
+          </button>
+        )}
       </header>
 
       {/* Overdue Warning Alert Box if any items are overdue */}
@@ -195,6 +203,117 @@ export const DashboardView: React.FC = () => {
               <Send className="w-3.5 h-3.5 text-purple-400 shrink-0" /> Published
             </span>
             <span className="text-2xl font-black text-purple-400 mt-2">{metrics.posted}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Analytics Charts Section */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Overall Agency Task Ratio */}
+        <div className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div>
+              <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
+                <PieChartIcon className="w-4 h-4 text-indigo-400" /> Agency Task Ratio
+              </h3>
+              <p className="text-[11px] text-gray-400">Breakdown of all active content by status</p>
+            </div>
+          </div>
+          <div className="h-64 w-full flex items-center justify-center mt-2">
+            {filteredContent.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Pending Shoot', value: filteredContent.filter(i => i.shootStatus !== 'Shot' && i.shootStatus !== 'Cancelled').length, color: '#fbbf24' },
+                      { name: 'In Editing', value: filteredContent.filter(i => i.postStatus === 'Editing').length, color: '#60a5fa' },
+                      { name: 'Ready to Post', value: filteredContent.filter(i => i.postStatus === 'Ready').length, color: '#34d399' },
+                      { name: 'Published', value: filteredContent.filter(i => i.postStatus === 'Posted').length, color: '#a855f7' },
+                      { name: 'Shot, Pending Post', value: filteredContent.filter(i => i.shootStatus === 'Shot' && !['Editing', 'Ready', 'Posted', 'Cancelled'].includes(i.postStatus)).length, color: '#818cf8' }
+                    ].filter(d => d.value > 0)}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                  >
+                    {[
+                      { name: 'Pending Shoot', value: filteredContent.filter(i => i.shootStatus !== 'Shot' && i.shootStatus !== 'Cancelled').length, color: '#fbbf24' },
+                      { name: 'In Editing', value: filteredContent.filter(i => i.postStatus === 'Editing').length, color: '#60a5fa' },
+                      { name: 'Ready to Post', value: filteredContent.filter(i => i.postStatus === 'Ready').length, color: '#34d399' },
+                      { name: 'Published', value: filteredContent.filter(i => i.postStatus === 'Posted').length, color: '#a855f7' },
+                      { name: 'Shot, Pending Post', value: filteredContent.filter(i => i.shootStatus === 'Shot' && !['Editing', 'Ready', 'Posted', 'Cancelled'].includes(i.postStatus)).length, color: '#818cf8' }
+                    ].filter(d => d.value > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color || '#6366f1'} stroke="rgba(0,0,0,0)" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                  <Legend 
+                    layout="vertical" 
+                    verticalAlign="middle" 
+                    align="right"
+                    wrapperStyle={{ fontSize: '11px' }}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-8 text-xs text-gray-500 font-medium">
+                No active tasks to visualize.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Creator Performance (Completed vs Pending) */}
+        <div className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div>
+              <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
+                <BarChartIcon className="w-4 h-4 text-indigo-400" /> Creator Performance
+              </h3>
+              <p className="text-[11px] text-gray-400">Completed vs Pending tasks per creator</p>
+            </div>
+          </div>
+          <div className="h-64 w-full mt-2">
+            {creators.length > 0 && filteredContent.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={creators.map(c => {
+                    const cContent = filteredContent.filter(item => item.creatorIds.includes(c.id));
+                    return {
+                      name: c.name || c.username,
+                      completed: cContent.filter(item => item.postStatus === 'Posted').length,
+                      pending: cContent.filter(item => item.postStatus !== 'Posted' && item.postStatus !== 'Cancelled').length,
+                      total: cContent.length
+                    };
+                  }).filter(c => c.total > 0).sort((a, b) => b.completed - a.completed)} 
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                    cursor={{ fill: '#1e293b', opacity: 0.4 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Bar dataKey="completed" name="Completed" fill="#a855f7" radius={[4, 4, 0, 0]} stackId="a" />
+                  <Bar dataKey="pending" name="Pending" fill="#fbbf24" radius={[4, 4, 0, 0]} stackId="a" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-xs text-gray-500 font-medium">
+                No active creator tasks to visualize.
+              </div>
+            )}
           </div>
         </div>
       </section>

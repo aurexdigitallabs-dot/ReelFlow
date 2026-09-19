@@ -65,7 +65,7 @@ service cloud.firestore {
     // =======================================================
     match /stores/{storeId} {
       allow read: if isAuthenticated();
-      allow create, update, delete: if isSuperAdmin();
+      allow create, update, delete: if isAdminOrSuper();
     }
 
     // =======================================================

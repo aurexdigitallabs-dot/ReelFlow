@@ -129,8 +129,45 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       onClose={onClose}
       title="Edit Creator Profile"
       subtitle={`Update details for ${creator.name}`}
+      footer={
+        <div className="flex items-center justify-between gap-3 w-full">
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Delete Creator
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="edit-creator-form"
+              disabled={isSubmitting || !!emailError}
+              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-3.5 h-3.5" /> Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form id="edit-creator-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
         {errorMsg && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -299,41 +336,6 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
           </div>
         )}
 
-        {/* Buttons */}
-        <div className="sticky bottom-0 bg-slate-900 pb-2 flex items-center justify-between gap-3 pt-3 border-t border-slate-800 mt-2 z-10 shadow-[0_-8px_16px_rgba(15,23,42,0.8)]">
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Delete Creator
-          </button>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-3.5 h-3.5" /> Save Changes
-                </>
-              )}
-            </button>
-          </div>
-        </div>
       </form>
     </BottomSheet>
   );

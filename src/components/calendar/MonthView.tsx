@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { getMonthCalendarGrid, formatDate, formatDayName, getTodayString } from '../../utils/dateUtils';
 import { Camera, Send, Plus, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
 import { ContentCard } from '../content/ContentCard';
@@ -13,6 +14,7 @@ const WEEKDAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export const MonthView: React.FC<MonthViewProps> = ({ currentDate, onSelectDate }) => {
   const { filteredContent, openAddContent } = useApp();
+  const { canAddContent } = useAuth();
   const todayStr = getTodayString();
   const [selectedDayStr, setSelectedDayStr] = useState<string>(todayStr);
 
@@ -154,25 +156,29 @@ export const MonthView: React.FC<MonthViewProps> = ({ currentDate, onSelectDate 
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openAddContent({ shootDate: selectedDayStr, postDate: selectedDayStr })}
-            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] rounded-xl shadow-sm transition-transform active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5" /> Schedule
-          </button>
+          {canAddContent && (
+            <button
+              type="button"
+              onClick={() => openAddContent({ shootDate: selectedDayStr })}
+              className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] rounded-xl shadow-sm transition-transform active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5" /> Schedule
+            </button>
+          )}
         </div>
 
         {totalActiveItems.length === 0 ? (
           <div className="py-6 text-center text-xs text-gray-500 italic flex flex-col items-center gap-2">
             <span>No shoots or posts scheduled on this date.</span>
-            <button
-              type="button"
-              onClick={() => openAddContent({ shootDate: selectedDayStr, postDate: selectedDayStr })}
-              className="text-indigo-400 hover:underline font-semibold text-xs mt-1"
-            >
-              + Plan a shoot or post for this day
-            </button>
+            {canAddContent && (
+              <button
+                type="button"
+                onClick={() => openAddContent({ shootDate: selectedDayStr })}
+                className="text-indigo-400 hover:underline font-semibold text-xs mt-1"
+              >
+                + Plan a shoot or post for this day
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">

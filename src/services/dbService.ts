@@ -20,15 +20,24 @@ const COLLECTIONS = {
   CONTENT: 'content'
 };
 
-// Utility to strip undefined properties before saving to Firestore
-function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
+// Utility to strip undefined properties recursively before saving to Firestore
+function cleanFirestoreData(obj: any): any {
+  if (obj === undefined) return undefined;
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return obj;
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => cleanFirestoreData(item)).filter(item => item !== undefined);
+  }
+
   const cleaned: any = {};
   Object.keys(obj).forEach((key) => {
-    if (obj[key] !== undefined) {
-      cleaned[key] = obj[key];
+    const val = cleanFirestoreData(obj[key]);
+    if (val !== undefined) {
+      cleaned[key] = val;
     }
   });
-  return cleaned as T;
+  return cleaned;
 }
 
 export const dbService = {

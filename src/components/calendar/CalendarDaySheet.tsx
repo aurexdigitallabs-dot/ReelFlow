@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { BottomSheet } from '../common/BottomSheet';
 import { ContentCard } from '../content/ContentCard';
 import { formatDate, formatDayName } from '../../utils/dateUtils';
@@ -12,6 +13,7 @@ interface CalendarDaySheetProps {
 
 export const CalendarDaySheet: React.FC<CalendarDaySheetProps> = ({ dateStr, onClose }) => {
   const { filteredContent, openAddContent } = useApp();
+  const { canAddContent } = useAuth();
 
   if (!dateStr) return null;
 
@@ -31,16 +33,18 @@ export const CalendarDaySheet: React.FC<CalendarDaySheetProps> = ({ dateStr, onC
     >
       <div className="flex flex-col gap-4">
         {/* Quick Add Content on this Date button */}
-        <button
-          type="button"
-          onClick={() => {
-            onClose();
-            openAddContent({ shootDate: dateStr, postDate: dateStr });
-          }}
-          className="w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-400 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" /> Schedule New Content on {formatDate(dateStr)}
-        </button>
+        {canAddContent && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              openAddContent({ shootDate: dateStr });
+            }}
+            className="w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-400 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Schedule New Content on {formatDate(dateStr)}
+          </button>
+        )}
 
         {/* Shoots Section */}
         <div>

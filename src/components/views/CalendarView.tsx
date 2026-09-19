@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { CalendarViewMode } from '../../types';
 import { MonthView } from '../calendar/MonthView';
 import { WeekView } from '../calendar/WeekView';
@@ -9,6 +10,7 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Camera, Send, Filt
 
 export const CalendarView: React.FC = () => {
   const { setIsFilterSheetOpen, openAddContent, filters } = useApp();
+  const { canAddContent } = useAuth();
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
@@ -72,13 +74,15 @@ export const CalendarView: React.FC = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openAddContent()}
-            className="sm:hidden flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" /> New
-          </button>
+          {canAddContent && (
+            <button
+              type="button"
+              onClick={() => openAddContent()}
+              className="sm:hidden flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" /> New
+            </button>
+          )}
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
@@ -148,13 +152,15 @@ export const CalendarView: React.FC = () => {
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={() => openAddContent()}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95"
-          >
-            <Plus className="w-4 h-4" /> Schedule
-          </button>
+          {canAddContent && (
+            <button
+              type="button"
+              onClick={() => openAddContent()}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> Schedule
+            </button>
+          )}
         </div>
       </div>
 

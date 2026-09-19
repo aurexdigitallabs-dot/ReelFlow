@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { ActiveTab } from '../../types';
-import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X, Building2, Download, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X, Building2, Download, Smartphone, Palette } from 'lucide-react';
 import { SingleAvatar } from '../common/CreatorAvatar';
 import { LoginModal } from '../auth/LoginModal';
 
@@ -10,9 +10,10 @@ import { BottomSheet } from '../common/BottomSheet';
 
 export const MobileBottomNav: React.FC = () => {
   const { activeTab, setActiveTab, openAddContent, content, stores, currentStoreId, setCurrentStoreId } = useApp();
-  const { userRole, userProfile } = useAuth();
+  const { userRole, userProfile, canAddContent } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isInstallSheetOpen, setIsInstallSheetOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
 
@@ -40,9 +41,8 @@ export const MobileBottomNav: React.FC = () => {
         setIsMoreOpen(false);
       }
     } else {
-      alert(
-        'To install ReelFlow on your Android or iOS device:\n\n1. Tap your browser menu (⋮ or Share icon)\n2. Select "Add to Home screen" or "Install App"'
-      );
+      setIsMoreOpen(false);
+      setIsInstallSheetOpen(true);
     }
   };
 
@@ -116,7 +116,7 @@ export const MobileBottomNav: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
               type="button"
               onClick={() => {
@@ -175,6 +175,24 @@ export const MobileBottomNav: React.FC = () => {
                 </button>
               </>
             )}
+
+            {currentStoreId !== 'all' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('brand_kit');
+                  setIsMoreOpen(false);
+                }}
+                className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all active:scale-95 ${
+                  activeTab === 'brand_kit'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 font-bold shadow-sm'
+                    : 'bg-slate-950 border-slate-800 text-gray-300 hover:border-slate-700'
+                }`}
+              >
+                <Palette className="w-5 h-5 text-pink-400" />
+                <span className="text-xs font-semibold">Brand Kit</span>
+              </button>
+            )}
           </div>
 
           {/* PWA Install / Android Native shortcut */}
@@ -204,45 +222,82 @@ export const MobileBottomNav: React.FC = () => {
       {/* Mobile Fixed Bottom Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/85 backdrop-blur-xl border-t border-slate-800/80 px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
         <div className="grid grid-cols-5 items-center text-center">
-          {/* Dashboard */}
-          <button
-            type="button"
-            onClick={() => setActiveTab(isCreatorRole ? 'my_assignments' : 'dashboard')}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
-              activeTab === 'dashboard' || activeTab === 'my_assignments'
-                ? 'text-indigo-400 font-bold'
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            {isCreatorRole ? <UserCheck className="w-5 h-5 text-emerald-400" /> : <LayoutDashboard className="w-5 h-5" />}
-            <span className="text-[10px] mt-0.5 truncate">{isCreatorRole ? 'Tasks' : 'Dashboard'}</span>
-          </button>
-
-          {/* Calendar */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('calendar')}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
-              activeTab === 'calendar' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            <Calendar className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5 truncate">Calendar</span>
-          </button>
-
-          {/* Center Floating + Add Button */}
-          <div className="flex items-center justify-center">
+          {/* Item 1: Tasks (for Creators) or Dashboard (for Admins) */}
+          {isCreatorRole ? (
             <button
               type="button"
-              onClick={() => openAddContent()}
-              className="-mt-5 w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 ring-4 ring-slate-950 active:scale-95 transition-transform"
-              title="Add Content"
+              onClick={() => setActiveTab('my_assignments')}
+              className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
+                activeTab === 'my_assignments' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
+              }`}
             >
-              <Plus className="w-5 h-5" />
+              <UserCheck className="w-5 h-5 text-emerald-400" />
+              <span className="text-[10px] mt-0.5 truncate">Tasks</span>
             </button>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
+                activeTab === 'dashboard' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 truncate">Dashboard</span>
+            </button>
+          )}
 
-          {/* Content */}
+          {/* Item 2: Dashboard (for Creators) or Calendar (for Admins) */}
+          {isCreatorRole ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
+                activeTab === 'dashboard' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 truncate">Dashboard</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setActiveTab('calendar')}
+              className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
+                activeTab === 'calendar' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 truncate">Calendar</span>
+            </button>
+          )}
+
+          {/* Item 3: Calendar (for Creators) or Center Floating + Add Button (for Admins) */}
+          {isCreatorRole ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab('calendar')}
+              className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
+                activeTab === 'calendar' ? 'text-indigo-400 font-bold' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-[10px] mt-0.5 truncate">Calendar</span>
+            </button>
+          ) : (
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => openAddContent()}
+                className="-mt-5 w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 ring-4 ring-slate-950 active:scale-95 transition-transform"
+                title="Add Content"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          {/* Item 4: Content */}
           <button
             type="button"
             onClick={() => setActiveTab('content')}
@@ -254,7 +309,7 @@ export const MobileBottomNav: React.FC = () => {
             <span className="text-[10px] mt-0.5 truncate">Content</span>
           </button>
 
-          {/* More Drawer Button */}
+          {/* Item 5: More Drawer Button */}
           <button
             type="button"
             onClick={() => setIsMoreOpen(true)}
@@ -274,6 +329,45 @@ export const MobileBottomNav: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <BottomSheet
+        isOpen={isInstallSheetOpen}
+        onClose={() => setIsInstallSheetOpen(false)}
+        title="Install ReelFlow"
+        subtitle="Add ReelFlow to your home screen for a native app experience."
+      >
+        <div className="flex flex-col gap-4 text-sm text-gray-300 px-2 py-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <span className="font-bold">1</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-100">Tap the Share button</p>
+              <p className="text-xs text-gray-400 mt-1">At the bottom (or top) of your browser, tap the Share icon (iOS) or Menu icon (Android).</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-4 mt-2">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <span className="font-bold">2</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-100">Add to Home Screen</p>
+              <p className="text-xs text-gray-400 mt-1">Scroll down the menu and tap "Add to Home Screen" or "Install App".</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-4 mt-2">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <span className="font-bold">3</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-100">Confirm Install</p>
+              <p className="text-xs text-gray-400 mt-1">Tap "Add" in the top right corner. The ReelFlow app will appear on your home screen.</p>
+            </div>
+          </div>
+        </div>
+      </BottomSheet>
 
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </>

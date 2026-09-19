@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { ShootStatus, PostStatus } from '../../types';
 import { StatusBadge } from './StatusBadge';
 import { ChevronDown, Check, Lock } from 'lucide-react';
+import { useUI } from '../../context/UIContext';
 
 interface StatusSelectorProps {
   type: 'shoot' | 'post';
@@ -24,6 +25,7 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { showToast } = useUI();
   const [coords, setCoords] = useState<{
     top?: number;
     bottom?: number;
@@ -77,10 +79,18 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
 
   if (disabled) {
     return (
-      <div className="inline-flex items-center gap-1 opacity-80" title="Read-only: You are not assigned to this content item">
+      <button 
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          showToast('Status is locked. You do not have permission to change this content item.', 'info');
+        }}
+        className="inline-flex items-center gap-1 opacity-80 cursor-pointer hover:opacity-100 transition-opacity" 
+        title="Read-only: You are not assigned to this content item"
+      >
         <StatusBadge type={type} status={currentStatus} size={size} />
         <Lock className="w-3 h-3 text-gray-500" />
-      </div>
+      </button>
     );
   }
 

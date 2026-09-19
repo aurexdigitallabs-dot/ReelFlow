@@ -8,10 +8,12 @@ import { AlertCircle, Check, Sparkles, Calendar } from 'lucide-react';
 import { INITIAL_CATEGORIES } from '../../data/seedData';
 import { CustomSelect } from '../common/CustomSelect';
 import { useUI } from '../../context/UIContext';
+import { useAuth } from '../../context/AuthContext';
 
 const DRAFT_KEY = 'reelflow_add_content_draft';
 
 export const AddContentModal: React.FC = () => {
+  const { canAddContent } = useAuth();
   const {
     isAddContentOpen,
     setIsAddContentOpen,
@@ -53,8 +55,20 @@ export const AddContentModal: React.FC = () => {
         if (addContentPrefill.storeId) setStoreId(addContentPrefill.storeId);
         if (addContentPrefill.categoryId) setCategoryId(addContentPrefill.categoryId);
         if (addContentPrefill.creatorIds) setSelectedCreatorIds(addContentPrefill.creatorIds);
-        if (addContentPrefill.shootDate) setShootDate(addContentPrefill.shootDate);
-        if (addContentPrefill.postDate) setPostDate(addContentPrefill.postDate);
+        if (addContentPrefill.shootDate) {
+          setShootDate(addContentPrefill.shootDate);
+          if (!addContentPrefill.postDate) {
+            const d = new Date(addContentPrefill.shootDate);
+            if (!isNaN(d.getTime())) {
+              d.setDate(d.getDate() + 1);
+              setPostDate(d.toISOString().split('T')[0]);
+            }
+          } else {
+            setPostDate(addContentPrefill.postDate);
+          }
+        } else if (addContentPrefill.postDate) {
+          setPostDate(addContentPrefill.postDate);
+        }
       } else {
         // Try restoring draft from localStorage
         const savedDraft = localStorage.getItem(DRAFT_KEY);
@@ -83,7 +97,9 @@ export const AddContentModal: React.FC = () => {
         setCategoryId(activeCategories[0]?.id || '');
         setSelectedCreatorIds(creators[0] ? [creators[0].id] : []);
         setShootDate(todayStr);
-        setPostDate(todayStr);
+        const tomorrow = new Date(todayStr);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        setPostDate(tomorrow.toISOString().split('T')[0]);
         setPriority('Normal');
         setNotes('');
         setReferenceUrl('');
@@ -128,11 +144,23 @@ export const AddContentModal: React.FC = () => {
     }
   };
 
+  const handleShootDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setShootDate(val);
+    if (val) {
+      const dateObj = new Date(val);
+      if (!isNaN(dateObj.getTime())) {
+        dateObj.setDate(dateObj.getDate() + 1);
+        setPostDate(dateObj.toISOString().split('T')[0]);
+      }
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || !canAddContent) return;
 
     if (!concept.trim()) {
       setErrorMsg('Please enter a content concept.');
@@ -187,6 +215,8 @@ export const AddContentModal: React.FC = () => {
     label: cat.name,
     color: cat.color
   }));
+
+  if (!isAddContentOpen || !canAddContent) return null;
 
   return (
     <BottomSheet
@@ -294,7 +324,7 @@ export const AddContentModal: React.FC = () => {
                 type="date"
                 required
                 value={shootDate}
-                onChange={(e) => setShootDate(e.target.value)}
+                onChange={handleShootDateChange}
                 onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
                 className="w-full pl-9 pr-2 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
               />

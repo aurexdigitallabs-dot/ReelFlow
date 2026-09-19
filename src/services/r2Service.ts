@@ -26,67 +26,25 @@ export const r2Service = {
    * Returns public/accessible image URL or data URL fallback
    */
   async uploadFile(file: File, folder: 'creators' | 'stores' | 'content' = 'content'): Promise<string> {
-    try {
-      if (!s3Client || !R2_BUCKET) {
-        throw new Error('R2 storage credentials not configured. Using local data URL preview.');
-      }
-
-      const extension = file.name.split('.').pop() || 'png';
-      const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${extension}`;
-      const arrayBuffer = await file.arrayBuffer();
-
-      const command = new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: fileName,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: file.type || 'image/jpeg'
-      });
-
-      await s3Client.send(command);
-      
-      // Return public R2 URL
-      return `${R2_PUBLIC_URL}/${fileName}`;
-    } catch (err) {
-      console.warn('⚠️ [r2Service.uploadFile] R2 upload failed, generating lightweight compressed thumbnail fallback (<30KB):', err);
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const maxDim = 256;
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > maxDim) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              }
-            } else {
-              if (height > maxDim) {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, width, height);
-              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
-              console.log(`📉 [r2Service] Compressed fallback avatar from raw file to ${Math.round(compressedDataUrl.length / 1024)} KB`);
-              resolve(compressedDataUrl);
-            } else {
-              resolve(e.target?.result as string);
-            }
-          };
-          img.onerror = () => resolve(e.target?.result as string);
-          img.src = e.target?.result as string;
-        };
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(file);
-      });
+    if (!s3Client || !R2_BUCKET || !R2_ACCOUNT_ID) {
+      throw new Error('R2 storage credentials (including VITE_R2_ACCOUNT_ID) are not properly configured.');
     }
+
+    const extension = file.name.split('.').pop() || 'png';
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${extension}`;
+    const arrayBuffer = await file.arrayBuffer();
+
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: fileName,
+      Body: new Uint8Array(arrayBuffer),
+      ContentType: file.type || 'image/jpeg'
+    });
+
+    await s3Client.send(command);
+    
+    // Return public R2 URL
+    return `${R2_PUBLIC_URL}/${fileName}`;
   },
   
   /**

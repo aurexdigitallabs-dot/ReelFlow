@@ -6,9 +6,15 @@ import { ContentCard } from '../content/ContentCard';
 import { CreatorAvatar } from '../common/CreatorAvatar';
 import { Camera, Send, CheckCircle2, Video, Sparkles, Calendar, Clock, Film, AlertTriangle } from 'lucide-react';
 
+import { CreatorSettingsModal } from '../creators/CreatorSettingsModal';
+import { Settings, PieChart as PieChartIcon } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+
 export const CreatorDashboardView: React.FC = () => {
   const { content, creators } = useApp();
   const { userProfile, userCreatorId } = useAuth();
+  
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   const todayStr = getTodayString();
 
@@ -56,33 +62,60 @@ export const CreatorDashboardView: React.FC = () => {
 
   const completionRate = totalAssigned > 0 ? Math.round((totalPosted / totalAssigned) * 100) : 0;
 
+  const pieData = [
+    { name: 'Pending Shoot', value: myAssignedContent.filter(i => i.shootStatus !== 'Shot' && i.shootStatus !== 'Cancelled').length, color: '#fbbf24' },
+    { name: 'In Editing', value: myAssignedContent.filter(i => i.postStatus === 'Editing').length, color: '#60a5fa' },
+    { name: 'Ready to Post', value: myAssignedContent.filter(i => i.postStatus === 'Ready').length, color: '#34d399' },
+    { name: 'Published', value: myAssignedContent.filter(i => i.postStatus === 'Posted').length, color: '#a855f7' },
+    { name: 'Shot, Pending Post', value: myAssignedContent.filter(i => i.shootStatus === 'Shot' && !['Editing', 'Ready', 'Posted', 'Cancelled'].includes(i.postStatus)).length, color: '#818cf8' }
+  ].filter(d => d.value > 0);
+
+  const contributionData = [
+    {
+      name: 'My Contribution',
+      assignedCount: totalAssigned,
+      shotCount: totalShot,
+      postedCount: totalPosted,
+    }
+  ];
+
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Creator Profile Header */}
       <header className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
           <CreatorAvatar creator={creator as any} size="lg" />
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-extrabold text-gray-100">{creator.name}'s Creator Dashboard</h2>
-              <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold">
+          <div className="flex flex-col min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <h2 className="text-base font-extrabold text-gray-100 truncate">{creator.name}'s Dashboard</h2>
+              <span className="badge px-2 py-0.5 text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold whitespace-nowrap">
                 Assigned Tasks Only
               </span>
             </div>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 truncate">
               @{creator.username} • {creator.email}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 shrink-0">
-          <div className="flex flex-col items-center px-3">
-            <span className="text-[10px] text-gray-400">Total Assigned</span>
-            <span className="text-base font-extrabold text-indigo-400">{totalAssigned}</span>
-          </div>
-          <div className="flex flex-col items-center px-3 border-x border-slate-800">
-            <span className="text-[10px] text-gray-400">Completion</span>
-            <span className="text-base font-extrabold text-emerald-400">{completionRate}%</span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+          <button
+             type="button"
+             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+             onClick={() => setIsSettingsOpen(true)}
+          >
+             <Settings className="w-4 h-4" /> Edit Profile
+          </button>
+          
+          <div className="flex items-center gap-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+            <div className="flex flex-col items-center px-3">
+              <span className="text-[10px] text-gray-400">Total Assigned</span>
+              <span className="text-base font-extrabold text-indigo-400">{totalAssigned}</span>
+            </div>
+            <div className="flex flex-col items-center px-3 border-x border-slate-800">
+              <span className="text-[10px] text-gray-400">Completion</span>
+              <span className="text-base font-extrabold text-emerald-400">{completionRate}%</span>
+            </div>
           </div>
         </div>
       </header>
@@ -138,6 +171,97 @@ export const CreatorDashboardView: React.FC = () => {
           <span className="text-2xl font-black text-purple-400 mt-2">{totalPosted}</span>
         </div>
       </section>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        
+        {/* Task Ratio Chart */}
+        <section className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div>
+              <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
+                <PieChartIcon className="w-4 h-4 text-indigo-400" /> My Task Ratio
+              </h3>
+              <p className="text-[11px] text-gray-400">Breakdown of your assigned tasks by status</p>
+            </div>
+          </div>
+          <div className="h-64 w-full flex items-center justify-center mt-2">
+            {pieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color || '#6366f1'} stroke="rgba(0,0,0,0)" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                  <Legend 
+                    layout="vertical" 
+                    verticalAlign="middle" 
+                    align="right"
+                    wrapperStyle={{ fontSize: '11px' }}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-8 text-xs text-gray-500 font-medium">
+                No active tasks to visualize.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Creator Contribution Chart */}
+        <section className="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div>
+              <h3 className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles className="w-4 h-4 text-indigo-400" /> My Contribution
+              </h3>
+              <p className="text-[11px] text-gray-400">Your total assigned vs shot vs posted</p>
+            </div>
+          </div>
+          <div className="h-64 w-full mt-2">
+            {totalAssigned > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={contributionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                    cursor={{ fill: '#1e293b', opacity: 0.4 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Bar dataKey="assignedCount" name="Assigned" fill="#64748b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="shotCount" name="Shot" fill="#34d399" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="postedCount" name="Posted" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-xs text-gray-500 font-medium">
+                No active tasks to visualize.
+              </div>
+            )}
+          </div>
+        </section>
+
+      </div>
 
       {/* My Today's Tasks */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,6 +327,12 @@ export const CreatorDashboardView: React.FC = () => {
           </div>
         )}
       </section>
+
+      <CreatorSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        creator={creator as any} 
+      />
     </div>
   );
 };

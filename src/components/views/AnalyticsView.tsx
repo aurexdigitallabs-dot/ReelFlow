@@ -15,11 +15,26 @@ import {
   Video,
   Sparkles,
   Send,
-  PieChart,
+  PieChart as PieChartIcon,
   Users,
   TrendingUp,
   Award
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from 'recharts';
 
 export const AnalyticsView: React.FC = () => {
   const { filteredContent, categories, creators, setSelectedCreatorId } = useApp();
@@ -169,29 +184,22 @@ export const AnalyticsView: React.FC = () => {
           </div>
 
           {weeklyTrends.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              {weeklyTrends.map((trend) => (
-                <div key={trend.weekLabel} className="flex flex-col gap-1 text-xs">
-                  <div className="flex items-center justify-between text-gray-300">
-                    <span className="font-bold">{trend.weekLabel}</span>
-                    <span className="text-[11px] text-gray-400">
-                      <strong className="text-indigo-400">{trend.shot} Shot</strong> / {trend.total} Total (Target: {trend.target})
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 flex">
-                    <div
-                      className="bg-indigo-500 h-full transition-all"
-                      style={{ width: `${(trend.shot / (trend.target || 1)) * 100}%` }}
-                      title={`${trend.shot} Shot`}
-                    />
-                    <div
-                      className="bg-purple-500 h-full transition-all"
-                      style={{ width: `${(trend.posted / (trend.target || 1)) * 100}%` }}
-                      title={`${trend.posted} Posted`}
-                    />
-                  </div>
-                </div>
-              ))}
+            <div className="h-64 w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrends} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis dataKey="weekLabel" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Line type="monotone" dataKey="target" name="Target" stroke="#64748b" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="shot" name="Shot" stroke="#6366f1" strokeWidth={3} dot={{ r: 4, fill: '#6366f1' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="posted" name="Posted" stroke="#a855f7" strokeWidth={3} dot={{ r: 4, fill: '#a855f7' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           ) : (
             <div className="text-center py-8 text-xs text-gray-500 font-medium">
@@ -204,34 +212,49 @@ export const AnalyticsView: React.FC = () => {
         <div className="glass-panel p-4 rounded-2xl flex flex-col gap-4 border-slate-800">
           <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
             <span className="text-xs font-bold text-gray-100 flex items-center gap-1.5 uppercase tracking-wider">
-              <PieChart className="w-4 h-4 text-purple-400" /> Category Breakdown
+              <PieChartIcon className="w-4 h-4 text-purple-400" /> Category Breakdown
             </span>
             <span className="text-[10px] text-gray-400">{categoryData.length} active categories</span>
           </div>
 
-          <div className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1">
-            {categoryData.map((cat) => (
-              <div key={cat.categoryId} className="flex flex-col gap-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-200 flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                    {cat.categoryName}
-                  </span>
-                  <span className="font-extrabold text-gray-300">
-                    {cat.count} items ({cat.percentage}%)
-                  </span>
-                </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${cat.percentage}%`,
-                      backgroundColor: cat.color
-                    }}
+          <div className="h-64 w-full flex items-center justify-center mt-2">
+            {categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    dataKey="count"
+                    nameKey="categoryName"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color || '#6366f1'} stroke="rgba(0,0,0,0)" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                    formatter={(value: any, name: any, props: any) => [`${value} items (${props.payload.percentage}%)`, name]}
                   />
-                </div>
+                  <Legend 
+                    layout="vertical" 
+                    verticalAlign="middle" 
+                    align="right"
+                    wrapperStyle={{ fontSize: '11px' }}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-8 text-xs text-gray-500 font-medium">
+                No category data available yet.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -246,6 +269,40 @@ export const AnalyticsView: React.FC = () => {
             <p className="text-[11px] text-gray-400">Assignment breakdown and completion rates per creator</p>
           </div>
           <Award className="w-5 h-5 text-amber-400 shrink-0" />
+        </div>
+
+        {/* Creator Performance Chart */}
+        <div className="h-64 w-full mt-2 mb-4">
+          {creatorData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={creatorData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                <XAxis 
+                  dataKey="creatorName" 
+                  stroke="#94a3b8" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  axisLine={false}
+                  angle={-35}
+                  textAnchor="end"
+                />
+                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  cursor={{ fill: '#1e293b', opacity: 0.4 }}
+                />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Bar dataKey="assignedCount" name="Assigned" fill="#64748b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="shotCount" name="Shot" fill="#34d399" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="postedCount" name="Posted" fill="#a855f7" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-xs text-gray-500 font-medium">
+              No creator data available.
+            </div>
+          )}
         </div>
 
         {/* Mobile View (< sm): Touch Cards */}

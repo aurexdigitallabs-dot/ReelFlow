@@ -24,7 +24,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   defaultExpanded = false
 }) => {
   const { creators, categories, stores, updateShootStatus, updatePostStatus, deleteContent, openEditContent, duplicateContent } = useApp();
-  const { canEditContent, canManageCreators } = useAuth();
+  const { canEditContent, canManageCreators, canDeleteContent } = useAuth();
   const { showConfirm } = useUI();
   const [showNotes, setShowNotes] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -244,7 +244,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
               </a>
             )}
 
-            {(canManageCreators || isEditable) && (
+            {canDeleteContent && (
               <button
                 type="button"
                 onClick={() => {
@@ -328,7 +328,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
                 </button>
               )}
 
-              {(canManageCreators || isEditable) && (
+              {canDeleteContent && (
                 <button
                   type="button"
                   onClick={(e) => {

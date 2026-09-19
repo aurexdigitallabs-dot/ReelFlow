@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { Store, Creator, Category, ContentItem, AppNotification, FilterState, ActiveTab, ViewMode, ShootStatus, PostStatus } from '../types';
 import { dbService } from '../services/dbService';
 import { storageService } from '../services/storageService';
+import { emailService } from '../services/emailService';
 import { INITIAL_CATEGORIES } from '../data/seedData';
 
 interface AppContextType {
@@ -46,6 +47,7 @@ interface AppContextType {
   
   isNotificationsOpen: boolean;
   setIsNotificationsOpen: (open: boolean) => void;
+  markNotificationAsRead: (id: string) => void;
   
   selectedCreatorId: string | null;
   setSelectedCreatorId: (id: string | null) => void;
@@ -65,6 +67,7 @@ interface AppContextType {
   deleteCreator: (id: string) => Promise<void>;
   
   addStore: (store: Omit<Store, 'id' | 'createdAt'>) => Promise<void>;
+  updateStore: (id: string, store: Partial<Store>) => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
   seedSampleDatabase: () => Promise<void>;
   
@@ -91,7 +94,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [creators, setCreators] = useState<Creator[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [content, setContent] = useState<ContentItem[]>([]);
-  const [currentStoreId, setCurrentStoreIdState] = useState<string>('all');
+  const [currentStoreId, setCurrentStoreIdState] = useState<string>(() => {
+    return localStorage.getItem('reelflow_current_store_id') || 'all';
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
   const [viewMode, setViewModeState] = useState<ViewMode>(() => {
@@ -127,6 +132,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('reelflow_read_notifs');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedCreatorId, setSelectedCreatorId] = useState<string | null>(null);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
 
@@ -187,13 +200,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  // Notifications derivation
-  const notifications = useMemo(() => {
-    return storageService.generateNotifications(content);
-  }, [content]);
+  // We'll define notifications below after filteredContent is derived
 
   const setCurrentStoreId = (id: string) => {
     setCurrentStoreIdState(id);
+    localStorage.setItem('reelflow_current_store_id', id);
     setFilters(prev => ({ ...prev, storeId: id }));
   };
 
@@ -219,6 +230,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Real DB Content Actions
   const addContent = async (itemData: Omit<ContentItem, 'id' | 'createdAt' | 'updatedAt'>) => {
     await dbService.addContent(itemData);
+    
+    // Trigger task assigned emails
+    if (itemData.creatorIds && itemData.creatorIds.length > 0) {
+      itemData.creatorIds.forEach(creatorId => {
+        const creator = creators.find(c => c.id === creatorId);
+        if (creator && creator.email) {
+          emailService.sendTaskAssignedEmail(creator.email, creator.name, itemData.title, itemData.shootDate);
+        }
+      });
+    }
   };
 
   const updateContent = async (id: string, updates: Partial<ContentItem>) => {
@@ -235,6 +256,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       await dbService.updateShootStatus(id, shootStatus);
     }
+    
+    const item = content.find((i) => i.id === id);
+    if (item && item.creatorIds) {
+      item.creatorIds.forEach(creatorId => {
+        const creator = creators.find(c => c.id === creatorId);
+        if (creator && creator.email) {
+          emailService.sendStatusUpdatedEmail(creator.email, creator.name, item.title, shootStatus);
+        }
+      });
+    }
   };
 
   const updatePostStatus = async (id: string, postStatus: PostStatus) => {
@@ -248,11 +279,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       await dbService.updatePostStatus(id, postStatus);
     }
+    
+    if (item && item.creatorIds) {
+      item.creatorIds.forEach(creatorId => {
+        const creator = creators.find(c => c.id === creatorId);
+        if (creator && creator.email) {
+          emailService.sendStatusUpdatedEmail(creator.email, creator.name, item.title, postStatus);
+        }
+      });
+    }
   };
 
   // Real DB Creator Actions
   const addCreator = async (creatorData: Omit<Creator, 'id' | 'createdAt'>) => {
     await dbService.addCreator(creatorData);
+    if (creatorData.email) {
+      emailService.sendWelcomeEmail(creatorData.email, creatorData.name);
+    }
   };
 
   const updateCreator = async (id: string, updates: Partial<Creator>) => {
@@ -266,6 +309,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Real DB Store Actions
   const addStore = async (storeData: Omit<Store, 'id' | 'createdAt'>) => {
     await dbService.addStore(storeData);
+  };
+
+  const updateStore = async (id: string, updates: Partial<Store>) => {
+    await dbService.updateStore(id, updates);
   };
 
   // Real DB Category Actions
@@ -318,6 +365,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [content, currentStoreId, filters, creators]);
 
+  // Notifications derivation
+  const notifications = useMemo(() => {
+    const rawNotifications = storageService.generateNotifications(filteredContent);
+    return rawNotifications.map(n => ({
+      ...n,
+      read: readNotificationIds.includes(n.id)
+    }));
+  }, [filteredContent, readNotificationIds]);
+
+  const markNotificationAsRead = (id: string) => {
+    if (!readNotificationIds.includes(id)) {
+      const updated = [...readNotificationIds, id];
+      setReadNotificationIds(updated);
+      localStorage.setItem('reelflow_read_notifs', JSON.stringify(updated));
+    }
+  };
+
   const currentStore = useMemo(() => {
     if (currentStoreId === 'all') return null;
     return stores.find(s => s.id === currentStoreId) || null;
@@ -360,6 +424,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsFilterSheetOpen,
         isNotificationsOpen,
         setIsNotificationsOpen,
+        markNotificationAsRead,
         selectedCreatorId,
         setSelectedCreatorId,
         selectedContentId,
@@ -373,6 +438,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateCreator,
         deleteCreator,
         addStore,
+        updateStore,
         addCategory,
         seedSampleDatabase,
         filteredContent,

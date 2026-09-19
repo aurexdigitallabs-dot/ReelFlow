@@ -24,7 +24,7 @@ export const Header: React.FC = () => {
     setActiveTab
   } = useApp();
 
-  const { canAddStore, userProfile, userRole, assignedStoreIds } = useAuth();
+  const { canAddStore, canAddContent, userProfile, userRole, assignedStoreIds } = useAuth();
   const { showAlert } = useUI();
 
   const [isAddStoreOpen, setIsAddStoreOpen] = useState(false);
@@ -150,15 +150,17 @@ export const Header: React.FC = () => {
           </div>
 
           {/* + Add Content Header Button */}
-          <button
-            type="button"
-            onClick={() => openAddContent()}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 transition-all active:scale-95 shrink-0"
-            aria-label="Add Content"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Content</span>
-          </button>
+          {canAddContent && (
+            <button
+              type="button"
+              onClick={() => openAddContent()}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 transition-all active:scale-95 shrink-0"
+              aria-label="Add Content"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add Content</span>
+            </button>
+          )}
         </div>
       </header>
 

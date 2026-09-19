@@ -17,6 +17,8 @@ interface AuthContextType {
   // Permission checks
   canAddStore: boolean;
   canManageCreators: boolean;
+  canAddContent: boolean;
+  canDeleteContent: boolean;
   canEditContent: (item: ContentItem) => boolean;
   userCreatorId: string | null;
   assignedStoreIds: string[] | null;
@@ -128,6 +130,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
   // Permission Checks: Only authorized logged-in users with appropriate roles have write permissions
   const canAddStore = isLoggedIn && isSuper;
   const canManageCreators = isLoggedIn && (isSuper || userRole === 'admin');
+  const canAddContent = isLoggedIn && (isSuper || userRole === 'admin');
+  const canDeleteContent = isLoggedIn && (isSuper || userRole === 'admin');
 
   const canEditContent = (item: ContentItem): boolean => {
     if (!isLoggedIn) return false;
@@ -157,6 +161,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode; creators: Creat
         promoteToSuperAdmin,
         canAddStore,
         canManageCreators,
+        canAddContent,
+        canDeleteContent,
         canEditContent,
         userCreatorId,
         assignedStoreIds
