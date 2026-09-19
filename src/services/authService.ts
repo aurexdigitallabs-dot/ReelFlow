@@ -73,9 +73,10 @@ export const authService = {
     const googlePhoto = user.photoURL || undefined;
 
     let matchedCreator: Creator | undefined = undefined;
+    let matchedBrandAdmin: any = undefined;
 
-    // 1. Query Firestore creators collection directly by email
     if (email) {
+      // 1. Query Firestore creators collection directly by email
       try {
         const creatorsRef = collection(db, 'creators');
         const q = query(creatorsRef, where('email', '==', email));
@@ -88,7 +89,7 @@ export const authService = {
           } as Creator;
         }
       } catch (err) {
-        console.warn('Firestore query error on creators collection (Check Firestore Rules in Firebase Console):', err);
+        console.warn('Firestore query error on creators collection:', err);
       }
 
       // Fallback check against in-memory creatorsList if passed
@@ -97,13 +98,29 @@ export const authService = {
           (c) => (c.email || '').toLowerCase().trim() === email
         );
       }
+
+      // 2. Query Firestore brand_admins collection directly by email
+      try {
+        const adminsRef = collection(db, 'brand_admins');
+        const qAdmin = query(adminsRef, where('email', '==', email));
+        const adminSnaps = await getDocs(qAdmin);
+        if (!adminSnaps.empty) {
+          const docSnap = adminSnaps.docs[0];
+          matchedBrandAdmin = {
+            id: docSnap.id,
+            ...docSnap.data()
+          };
+        }
+      } catch (err) {
+        console.warn('Firestore query error on brand_admins collection:', err);
+      }
     }
 
     // 2. Check existing user document in Firestore
     if (userSnap && userSnap.exists()) {
       const existingData = userSnap.data() as UserProfile;
 
-      // If user had role 'unassigned' but now email matches a Creator (onboarded by admin!)
+      // If user had role 'unassigned' but now matches a Creator
       if (existingData.role === 'unassigned' && matchedCreator) {
         const updatedProfile: UserProfile = {
           ...existingData,
@@ -129,13 +146,43 @@ export const authService = {
         return updatedProfile;
       }
 
+      // If user had role 'unassigned' but now matches a Brand Admin
+      if (existingData.role === 'unassigned' && matchedBrandAdmin) {
+        const updatedProfile: UserProfile = {
+          ...existingData,
+          role: 'admin',
+          assignedStoreIds: matchedBrandAdmin.assignedStoreIds || [],
+          displayName: existingData.displayName || matchedBrandAdmin.name || user.displayName || 'Brand Admin',
+          photoURL: googlePhoto || existingData.photoURL
+        };
+        try {
+          await setDoc(userDocRef, updatedProfile, { merge: true });
+        } catch (e) {
+          console.warn('Failed to merge updated brand admin profile:', e);
+        }
+
+        try {
+          await dbService.updateBrandAdmin(matchedBrandAdmin.id, { onboarded: true });
+        } catch (e) {
+          console.warn('Failed to update brand admin onboarding status:', e);
+        }
+        return updatedProfile;
+      }
+
       // If user is already assigned a valid role ('super', 'admin', 'creator')
       if (existingData.role !== 'unassigned') {
         if (matchedCreator && !matchedCreator.onboarded) {
           try {
             await dbService.updateCreator(matchedCreator.id, { onboarded: true });
           } catch (e) {
-            console.warn('Failed to sync onboarded status:', e);
+            console.warn('Failed to sync creator onboarded status:', e);
+          }
+        }
+        if (matchedBrandAdmin && !matchedBrandAdmin.onboarded) {
+          try {
+            await dbService.updateBrandAdmin(matchedBrandAdmin.id, { onboarded: true });
+          } catch (e) {
+            console.warn('Failed to sync brand admin onboarded status:', e);
           }
         }
         if (googlePhoto && existingData.photoURL !== googlePhoto) {
@@ -153,6 +200,7 @@ export const authService = {
     // 3. User document does not exist or remains unassigned
     let role: UserRole = 'unassigned';
     let creatorId: string | undefined = undefined;
+    let assignedStoreIds: string[] | undefined = undefined;
 
     if (matchedCreator) {
       role = 'creator';
@@ -166,15 +214,25 @@ export const authService = {
       } catch (e) {
         console.warn('Failed to update creator onboarded status on signup:', e);
       }
+    } else if (matchedBrandAdmin) {
+      role = 'admin';
+      assignedStoreIds = matchedBrandAdmin.assignedStoreIds || [];
+
+      try {
+        await dbService.updateBrandAdmin(matchedBrandAdmin.id, { onboarded: true });
+      } catch (e) {
+        console.warn('Failed to update brand admin onboarded status on signup:', e);
+      }
     }
 
     const newProfile: UserProfile = {
       uid: user.uid,
       email: user.email || '',
-      displayName: user.displayName || matchedCreator?.name || user.email?.split('@')[0] || 'User',
+      displayName: user.displayName || matchedBrandAdmin?.name || matchedCreator?.name || user.email?.split('@')[0] || 'User',
       photoURL: googlePhoto || matchedCreator?.profileImage,
       role,
       creatorId,
+      assignedStoreIds,
       createdAt: new Date().toISOString()
     };
 

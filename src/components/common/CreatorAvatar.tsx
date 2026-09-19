@@ -16,6 +16,11 @@ export const SingleAvatar: React.FC<{
   borderClass?: string;
 }> = ({ name, username, profileImage, sizeClass, borderClass = '' }) => {
   const [imgError, setImgError] = useState(false);
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [profileImage]);
+
   const initialLetter = (name || 'U').trim().charAt(0).toUpperCase() || 'U';
 
   const bgGradients = [
@@ -28,12 +33,15 @@ export const SingleAvatar: React.FC<{
   const charCode = initialLetter.charCodeAt(0) || 0;
   const gradient = bgGradients[charCode % bgGradients.length];
 
+  // If image URL is from placeholder broken domain, skip to avoid DNS error
+  const isValidImage = profileImage && !profileImage.includes('reelflow.app') && !imgError;
+
   return (
     <div
       className={`relative inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 font-bold ${sizeClass} ${borderClass}`}
       title={username ? `${name} (@${username})` : name}
     >
-      {profileImage && !imgError ? (
+      {isValidImage ? (
         <img
           src={profileImage}
           alt={name}

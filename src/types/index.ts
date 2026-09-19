@@ -81,6 +81,16 @@ export interface Creator {
   onboarded?: boolean;
 }
 
+export interface BrandAdmin {
+  id: string;
+  name: string;
+  email: string;
+  assignedStoreIds: string[];
+  status: 'Active' | 'Inactive';
+  createdAt: string;
+  onboarded?: boolean;
+}
+
 export interface Category {
   id: string;
   name: string;

@@ -10,12 +10,13 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Store, Creator, Category, ContentItem, ShootStatus, PostStatus } from '../types';
+import { Store, Creator, BrandAdmin, Category, ContentItem, ShootStatus, PostStatus } from '../types';
 import { INITIAL_STORES, INITIAL_CATEGORIES, INITIAL_CREATORS } from '../data/seedData';
 
 const COLLECTIONS = {
   STORES: 'stores',
   CREATORS: 'creators',
+  BRAND_ADMINS: 'brand_admins',
   CATEGORIES: 'categories',
   CONTENT: 'content'
 };
@@ -120,6 +121,43 @@ export const dbService = {
 
   async deleteStore(id: string): Promise<void> {
     const ref = doc(db, COLLECTIONS.STORES, id);
+    await deleteDoc(ref);
+  },
+
+  // Real-time Brand Admin Subscriptions
+  subscribeBrandAdmins(onData: (admins: BrandAdmin[]) => void): Unsubscribe {
+    const q = query(collection(db, COLLECTIONS.BRAND_ADMINS));
+    return onSnapshot(q, (snapshot) => {
+      const admins: BrandAdmin[] = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      } as BrandAdmin));
+      onData(admins);
+    }, (error) => {
+      console.error('Error fetching brand admins from Firestore:', error);
+      onData([]);
+    });
+  },
+
+  // Brand Admin CRUD
+  async addBrandAdmin(adminData: Omit<BrandAdmin, 'id' | 'createdAt'>): Promise<string> {
+    const newRef = doc(collection(db, COLLECTIONS.BRAND_ADMINS));
+    const adminItem: BrandAdmin = cleanFirestoreData({
+      ...adminData,
+      id: newRef.id,
+      createdAt: new Date().toISOString()
+    });
+    await setDoc(newRef, adminItem);
+    return newRef.id;
+  },
+
+  async updateBrandAdmin(id: string, updates: Partial<BrandAdmin>): Promise<void> {
+    const ref = doc(db, COLLECTIONS.BRAND_ADMINS, id);
+    await updateDoc(ref, cleanFirestoreData(updates));
+  },
+
+  async deleteBrandAdmin(id: string): Promise<void> {
+    const ref = doc(db, COLLECTIONS.BRAND_ADMINS, id);
     await deleteDoc(ref);
   },
 

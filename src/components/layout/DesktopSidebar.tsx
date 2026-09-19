@@ -17,13 +17,13 @@ import {
   Building2,
   User,
   Palette,
-  Mail
+  Mail,
+  ShieldCheck
 } from 'lucide-react';
 
-
 export const DesktopSidebar: React.FC = () => {
-  const { activeTab, setActiveTab, openAddContent, content, currentStore } = useApp();
-  const { userProfile, userRole, assignedStoreIds, canAddContent } = useAuth();
+  const { activeTab, setActiveTab, openAddContent, content, currentStore, openBrandAdminsModal } = useApp();
+  const { userProfile, userRole, assignedStoreIds, canAddContent, canManageBrandAdmins } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const readyCount = content.filter((i) => i.postStatus === 'Ready').length;
@@ -135,6 +135,23 @@ export const DesktopSidebar: React.FC = () => {
               </button>
             );
           })}
+
+          {/* Super Admin: Brand Admins Onboarding & Access Control */}
+          {canManageBrandAdmins && (
+            <button
+              type="button"
+              onClick={() => openBrandAdminsModal()}
+              className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-purple-300 hover:bg-purple-950/40 hover:text-purple-200 border border-purple-500/20 transition-all cursor-pointer mt-1"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-4 h-4 text-purple-400" />
+                <span>Brand Admins</span>
+              </div>
+              <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-bold rounded-md">
+                Admin
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Bottom Summary Widget */}

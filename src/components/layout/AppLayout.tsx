@@ -19,9 +19,18 @@ import { AddContentModal } from '../content/AddContentModal';
 import { EditContentModal } from '../content/EditContentModal';
 import { ContentFilterSheet } from '../content/ContentFilterSheet';
 import { CreatorDetailModal } from '../creators/CreatorDetailModal';
+import { BrandAdminsModal } from '../admin/BrandAdminsModal';
 
 export const AppLayout: React.FC = () => {
-  const { activeTab, setActiveTab, currentStoreId, selectedCreatorId, setSelectedCreatorId } = useApp();
+  const {
+    activeTab,
+    setActiveTab,
+    currentStoreId,
+    selectedCreatorId,
+    setSelectedCreatorId,
+    isBrandAdminsModalOpen,
+    setIsBrandAdminsModalOpen
+  } = useApp();
 
   React.useEffect(() => {
     if (currentStoreId === 'all' && activeTab === 'brand_kit') {
@@ -79,6 +88,10 @@ export const AppLayout: React.FC = () => {
       <AddContentModal />
       <EditContentModal />
       <ContentFilterSheet />
+      <BrandAdminsModal
+        isOpen={isBrandAdminsModalOpen}
+        onClose={() => setIsBrandAdminsModalOpen(false)}
+      />
 
       {/* Creator Detail Profile Modal */}
       {selectedCreatorId && (

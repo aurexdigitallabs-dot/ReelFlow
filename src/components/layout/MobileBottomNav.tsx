@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { ActiveTab } from '../../types';
-import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X, Building2, Download, Smartphone, Palette } from 'lucide-react';
+import { LayoutDashboard, Calendar, Film, Users, BarChart3, Plus, Clock, UserCheck, MoreHorizontal, X, Building2, Download, Smartphone, Palette, ShieldCheck } from 'lucide-react';
 import { SingleAvatar } from '../common/CreatorAvatar';
 import { LoginModal } from '../auth/LoginModal';
 
 import { BottomSheet } from '../common/BottomSheet';
 
 export const MobileBottomNav: React.FC = () => {
-  const { activeTab, setActiveTab, openAddContent, content, stores, currentStoreId, setCurrentStoreId } = useApp();
-  const { userRole, userProfile, canAddContent } = useAuth();
+  const { activeTab, setActiveTab, openAddContent, content, stores, currentStoreId, setCurrentStoreId, openBrandAdminsModal } = useApp();
+  const { userRole, userProfile, canAddContent, canManageBrandAdmins } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isInstallSheetOpen, setIsInstallSheetOpen] = useState(false);
@@ -191,6 +191,20 @@ export const MobileBottomNav: React.FC = () => {
               >
                 <Palette className="w-5 h-5 text-pink-400" />
                 <span className="text-xs font-semibold">Brand Kit</span>
+              </button>
+            )}
+
+            {canManageBrandAdmins && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMoreOpen(false);
+                  openBrandAdminsModal();
+                }}
+                className="p-3.5 rounded-2xl border border-purple-500/30 bg-purple-950/20 text-purple-300 hover:bg-purple-900/30 flex flex-col items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <ShieldCheck className="w-5 h-5 text-purple-400" />
+                <span className="text-xs font-semibold">Brand Admins</span>
               </button>
             )}
           </div>

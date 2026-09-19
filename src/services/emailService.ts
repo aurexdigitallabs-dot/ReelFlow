@@ -1,4 +1,4 @@
-import { getWelcomeEmail, getTaskAssignedEmail, getStatusUpdatedEmail } from '../emails/templates';
+import { getWelcomeEmail, getTaskAssignedEmail, getStatusUpdatedEmail, getBrandAdminWelcomeEmail } from '../emails/templates';
 
 // In production on Netlify, use relative '/api/send-email' handled by Netlify serverless functions.
 // In local dev, '/api/send-email' is proxied by Vite to http://localhost:3001, with fallback directly to 3001.
@@ -68,6 +68,11 @@ class EmailService {
     return await this.sendEmail(to, 'Welcome to ReelFlow - Creator Onboarding', html);
   }
 
+  async sendBrandAdminWelcomeEmail(to: string, adminName: string, storeNames: string[]): Promise<SendEmailResult> {
+    const html = getBrandAdminWelcomeEmail(adminName, storeNames, 'https://reelflow.aurexdigitals.in/login');
+    return await this.sendEmail(to, 'Welcome to ReelFlow - Brand Admin Access', html);
+  }
+
   async sendTaskAssignedEmail(to: string, creatorName: string, taskTitle: string, dueDate: string): Promise<SendEmailResult> {
     const html = getTaskAssignedEmail(creatorName, taskTitle, dueDate, 'https://reelflow.aurexdigitals.in/dashboard');
     return await this.sendEmail(to, 'New Task Assigned: ' + taskTitle, html);
@@ -80,3 +85,4 @@ class EmailService {
 }
 
 export const emailService = new EmailService();
+

@@ -164,3 +164,35 @@ export const getStatusUpdatedEmail = (creatorName: string, taskTitle: string, ne
   `;
   return getBaseTemplate(content);
 };
+
+export const getBrandAdminWelcomeEmail = (adminName: string, storeNames: string[], loginUrl: string) => {
+  const storeBadges = storeNames.map(name => `
+    <span style="display: inline-block; background-color: rgba(99, 102, 241, 0.2); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; margin: 3px 4px 3px 0;">
+      🛍️ ${name}
+    </span>
+  `).join('');
+
+  const content = `
+    <h2 style="color: #f8fafc; font-size: 22px; font-weight: 700; margin-top: 0; margin-bottom: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: -0.3px;">Welcome to ReelFlow, ${adminName}!</h2>
+    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin-top: 0; margin-bottom: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">You have been appointed as a <strong>Brand Admin</strong> by the Super Admin.</p>
+    <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-top: 0; margin-bottom: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">You have management access to the following assigned brand(s):</p>
+    
+    <div style="margin: 12px 0 20px 0;">
+      ${storeBadges || '<span style="color: #94a3b8; font-size: 13px;">Assigned Brands</span>'}
+    </div>
+
+    <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-top: 0; margin-bottom: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">You can now log in to review social reel content, track shooting calendars, manage brand guidelines, and collaborate directly with your assigned creators.</p>
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 28px 0;">
+      <tr>
+        <td align="center">
+          <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff !important; font-weight: 600; font-size: 15px; text-decoration: none; padding: 13px 32px; border-radius: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);">Access Brand Dashboard</a>
+        </td>
+      </tr>
+    </table>
+    
+    <p style="color: #64748b; font-size: 12px; margin: 24px 0 0 0; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">If you have any questions, please contact your Super Admin.</p>
+  `;
+  return getBaseTemplate(content);
+};
+

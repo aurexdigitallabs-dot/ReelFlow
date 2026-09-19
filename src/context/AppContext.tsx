@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { Store, Creator, Category, ContentItem, AppNotification, FilterState, ActiveTab, ViewMode, ShootStatus, PostStatus } from '../types';
+import { Store, Creator, BrandAdmin, Category, ContentItem, AppNotification, FilterState, ActiveTab, ViewMode, ShootStatus, PostStatus } from '../types';
 import { dbService } from '../services/dbService';
 import { storageService } from '../services/storageService';
 import { emailService } from '../services/emailService';
@@ -67,6 +67,15 @@ interface AppContextType {
   deleteCreator: (id: string) => Promise<void>;
   sendCreatorOnboardingEmail: (creator: Creator) => Promise<{ success: boolean; error?: string; warning?: string }>;
   
+  isBrandAdminsModalOpen: boolean;
+  setIsBrandAdminsModalOpen: (open: boolean) => void;
+  openBrandAdminsModal: () => void;
+  brandAdmins: BrandAdmin[];
+  addBrandAdmin: (admin: Omit<BrandAdmin, 'id' | 'createdAt'>) => Promise<string | void>;
+  updateBrandAdmin: (id: string, updates: Partial<BrandAdmin>) => Promise<void>;
+  deleteBrandAdmin: (id: string) => Promise<void>;
+  sendBrandAdminOnboardingEmail: (admin: BrandAdmin) => Promise<{ success: boolean; error?: string; warning?: string }>;
+  
   addStore: (store: Omit<Store, 'id' | 'createdAt'>) => Promise<void>;
   updateStore: (id: string, store: Partial<Store>) => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
@@ -93,6 +102,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [stores, setStores] = useState<Store[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [brandAdmins, setBrandAdmins] = useState<BrandAdmin[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [content, setContent] = useState<ContentItem[]>([]);
   const [currentStoreId, setCurrentStoreIdState] = useState<string>(() => {
@@ -133,6 +143,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isBrandAdminsModalOpen, setIsBrandAdminsModalOpen] = useState(false);
+  const openBrandAdminsModal = () => setIsBrandAdminsModalOpen(true);
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('reelflow_read_notifs');
@@ -181,6 +193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLoading(true);
     const unsubStores = dbService.subscribeStores((data) => setStores(data));
     const unsubCreators = dbService.subscribeCreators((data) => setCreators(data));
+    const unsubAdmins = dbService.subscribeBrandAdmins((data) => setBrandAdmins(data));
     const unsubCategories = dbService.subscribeCategories((data) => {
       if (!data || data.length === 0) {
         setCategories(INITIAL_CATEGORIES);
@@ -196,6 +209,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => {
       unsubStores();
       unsubCreators();
+      unsubAdmins();
       unsubCategories();
       unsubContent();
     };
@@ -319,6 +333,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteCreator = async (id: string) => {
     await dbService.deleteCreator(id);
+  };
+
+  // Real DB Brand Admin Actions
+  const addBrandAdmin = async (adminData: Omit<BrandAdmin, 'id' | 'createdAt'>) => {
+    const newId = await dbService.addBrandAdmin({
+      ...adminData,
+      onboarded: adminData.onboarded ?? false
+    });
+    if (adminData.email) {
+      const assignedNames = stores
+        .filter((s) => (adminData.assignedStoreIds || []).includes(s.id))
+        .map((s) => s.name);
+      emailService.sendBrandAdminWelcomeEmail(adminData.email, adminData.name, assignedNames).catch((err) => {
+        console.error('Failed to send brand admin welcome email:', err);
+      });
+    }
+    return newId;
+  };
+
+  const sendBrandAdminOnboardingEmail = async (admin: BrandAdmin) => {
+    if (!admin.email) {
+      return { success: false, error: 'Brand Admin does not have an email address' };
+    }
+    const assignedNames = stores
+      .filter((s) => (admin.assignedStoreIds || []).includes(s.id))
+      .map((s) => s.name);
+    const result = await emailService.sendBrandAdminWelcomeEmail(admin.email, admin.name, assignedNames);
+    return result;
+  };
+
+  const updateBrandAdmin = async (id: string, updates: Partial<BrandAdmin>) => {
+    await dbService.updateBrandAdmin(id, updates);
+  };
+
+  const deleteBrandAdmin = async (id: string) => {
+    await dbService.deleteBrandAdmin(id);
   };
 
   // Real DB Store Actions
@@ -453,6 +503,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateCreator,
         deleteCreator,
         sendCreatorOnboardingEmail,
+        isBrandAdminsModalOpen,
+        setIsBrandAdminsModalOpen,
+        openBrandAdminsModal,
+        brandAdmins,
+        addBrandAdmin,
+        updateBrandAdmin,
+        deleteBrandAdmin,
+        sendBrandAdminOnboardingEmail,
         addStore,
         updateStore,
         addCategory,

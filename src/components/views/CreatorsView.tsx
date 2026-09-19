@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { Creator } from '../../types';
 import { CreatorCard } from '../creators/CreatorCard';
 import { AddCreatorModal } from '../creators/AddCreatorModal';
 import { EditCreatorModal } from '../creators/EditCreatorModal';
 import { SearchInput } from '../common/SearchInput';
-import { UserPlus, Users } from 'lucide-react';
+import { UserPlus, Users, ShieldCheck } from 'lucide-react';
 import { CardSkeleton, HeaderSkeleton } from '../common/Skeletons';
 
 export const CreatorsView: React.FC = () => {
-  const { creators, setSelectedCreatorId, isLoading } = useApp();
+  const { creators, setSelectedCreatorId, isLoading, openBrandAdminsModal } = useApp();
+  const { canManageBrandAdmins } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddCreatorOpen, setIsAddCreatorOpen] = useState(false);
   const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
@@ -45,13 +47,25 @@ export const CreatorsView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsAddCreatorOpen(true)}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 cursor-pointer active:scale-95 transition-transform"
-        >
-          <UserPlus className="w-4 h-4" /> Add Creator
-        </button>
+        <div className="flex items-center gap-2">
+          {canManageBrandAdmins && (
+            <button
+              type="button"
+              onClick={() => openBrandAdminsModal()}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-950/40 hover:bg-purple-900/50 text-purple-300 border border-purple-500/30 font-bold text-xs rounded-xl cursor-pointer active:scale-95 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4 text-purple-400" /> Brand Admins
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsAddCreatorOpen(true)}
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 cursor-pointer active:scale-95 transition-transform"
+          >
+            <UserPlus className="w-4 h-4" /> Add Creator
+          </button>
+        </div>
       </header>
 
       {/* Search Bar */}
