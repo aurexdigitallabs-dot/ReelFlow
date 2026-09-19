@@ -117,19 +117,27 @@ export const authService = {
           console.warn('Failed to merge updated user profile:', e);
         }
 
-        // Sync Google photoURL to Creator profile if missing
-        if (googlePhoto && (!matchedCreator.profileImage || matchedCreator.profileImage.includes('unsplash'))) {
-          try {
-            await dbService.updateCreator(matchedCreator.id, { profileImage: googlePhoto });
-          } catch (e) {
-            console.warn('Failed to update creator profile image:', e);
-          }
+        // Sync Google photoURL & mark Creator as onboarded since they logged in
+        try {
+          await dbService.updateCreator(matchedCreator.id, {
+            onboarded: true,
+            ...(googlePhoto && (!matchedCreator.profileImage || matchedCreator.profileImage.includes('unsplash')) ? { profileImage: googlePhoto } : {})
+          });
+        } catch (e) {
+          console.warn('Failed to update creator onboarding status:', e);
         }
         return updatedProfile;
       }
 
       // If user is already assigned a valid role ('super', 'admin', 'creator')
       if (existingData.role !== 'unassigned') {
+        if (matchedCreator && !matchedCreator.onboarded) {
+          try {
+            await dbService.updateCreator(matchedCreator.id, { onboarded: true });
+          } catch (e) {
+            console.warn('Failed to sync onboarded status:', e);
+          }
+        }
         if (googlePhoto && existingData.photoURL !== googlePhoto) {
           try {
             await setDoc(userDocRef, { photoURL: googlePhoto }, { merge: true });
@@ -150,12 +158,13 @@ export const authService = {
       role = 'creator';
       creatorId = matchedCreator.id;
 
-      if (googlePhoto && (!matchedCreator.profileImage || matchedCreator.profileImage.includes('unsplash'))) {
-        try {
-          await dbService.updateCreator(matchedCreator.id, { profileImage: googlePhoto });
-        } catch (e) {
-          console.warn('Failed to update creator profile image:', e);
-        }
+      try {
+        await dbService.updateCreator(matchedCreator.id, {
+          onboarded: true,
+          ...(googlePhoto && (!matchedCreator.profileImage || matchedCreator.profileImage.includes('unsplash')) ? { profileImage: googlePhoto } : {})
+        });
+      } catch (e) {
+        console.warn('Failed to update creator onboarded status on signup:', e);
       }
     }
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Creator } from '../../types';
 import { BottomSheet } from '../common/BottomSheet';
-import { AlertCircle, Trash2, Save, Loader2, UploadCloud, X } from 'lucide-react';
+import { AlertCircle, Trash2, Save, Loader2, UploadCloud, X, Mail } from 'lucide-react';
 import { useUI } from '../../context/UIContext';
 import { r2Service } from '../../services/r2Service';
 
@@ -13,7 +13,7 @@ interface EditCreatorModalProps {
 }
 
 export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isOpen, onClose }) => {
-  const { stores, updateCreator, deleteCreator, creators } = useApp();
+  const { stores, updateCreator, deleteCreator, creators, sendCreatorOnboardingEmail } = useApp();
   const { showConfirm, showToast } = useUI();
 
   const [name, setName] = useState('');
@@ -31,6 +31,8 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [onboarded, setOnboarded] = useState(false);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
 
   useEffect(() => {
     if (creator && isOpen) {
@@ -44,6 +46,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
       setBio(creator.bio || '');
       setStatus(creator.status || 'Active');
       setSelectedStoreIds(creator.storeIds || []);
+      setOnboarded(creator.onboarded === true);
       setAvatarFile(null);
       setPreviewUrl('');
       setUploadStatus('');
@@ -119,6 +122,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
         email: email.trim(),
         bio: bio.trim(),
         status,
+        onboarded,
         storeIds: selectedStoreIds
       });
 
@@ -385,7 +389,7 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
         {/* Status */}
         <div>
           <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-            Status
+            Account Status
           </label>
           <div className="flex items-center gap-2">
             <button
@@ -409,6 +413,69 @@ export const EditCreatorModal: React.FC<EditCreatorModalProps> = ({ creator, isO
               }`}
             >
               ⚪ Inactive
+            </button>
+          </div>
+        </div>
+
+        {/* Onboarding Status & Invite Trigger */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-gray-300">
+              Onboarding Status
+            </label>
+            {email && (
+              <button
+                type="button"
+                disabled={isSendingInvite}
+                onClick={async () => {
+                  if (!creator) return;
+                  setIsSendingInvite(true);
+                  try {
+                    const res = await sendCreatorOnboardingEmail({ ...creator, email: email.trim(), name: name.trim() });
+                    if (res.success) {
+                      if (res.warning) {
+                        showToast(res.warning, 'info');
+                      } else {
+                        showToast(`Onboarding invite email sent to ${email.trim()}!`, 'success');
+                      }
+                    } else {
+                      showToast(res.error || 'Failed to send invite', 'error');
+                    }
+                  } catch (e: any) {
+                    showToast(e?.message || 'Failed to send invite', 'error');
+                  } finally {
+                    setIsSendingInvite(false);
+                  }
+                }}
+                className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+              >
+                {isSendingInvite ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                Send Invite Email Now
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOnboarded(true)}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                onboarded
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                  : 'bg-slate-900 border-slate-800 text-gray-400'
+              }`}
+            >
+              ✓ Onboarded
+            </button>
+            <button
+              type="button"
+              onClick={() => setOnboarded(false)}
+              className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                !onboarded
+                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+                  : 'bg-slate-900 border-slate-800 text-gray-400'
+              }`}
+            >
+              ⏳ Onboarding Pending
             </button>
           </div>
         </div>

@@ -4,7 +4,8 @@ import { BottomSheet } from '../common/BottomSheet';
 import { ContentCard } from '../content/ContentCard';
 import { CreatorAvatar } from '../common/CreatorAvatar';
 import { EditCreatorModal } from './EditCreatorModal';
-import { Phone, Mail, AtSign, Calendar, Tag, Edit2 } from 'lucide-react';
+import { Phone, Mail, AtSign, Calendar, Tag, Edit2, Send, Loader2, UserCheck, AlertCircle } from 'lucide-react';
+import { useUI } from '../../context/UIContext';
 
 interface CreatorDetailModalProps {
   creatorId: string;
@@ -12,12 +13,38 @@ interface CreatorDetailModalProps {
 }
 
 export const CreatorDetailModal: React.FC<CreatorDetailModalProps> = ({ creatorId, onClose }) => {
-  const { creators, content, categories } = useApp();
+  const { creators, content, categories, sendCreatorOnboardingEmail } = useApp();
+  const { showToast } = useUI();
   const [activeSubTab, setActiveSubTab] = useState<'assignments' | 'shoots' | 'posts' | 'completed'>('assignments');
   const [isEditing, setIsEditing] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const creator = creators.find((c) => c.id === creatorId);
   if (!creator) return null;
+
+  const handleSendInvite = async () => {
+    if (!creator.email) {
+      showToast(`Cannot send invite: ${creator.name} has no email address.`, 'error');
+      return;
+    }
+    setIsSendingEmail(true);
+    try {
+      const res = await sendCreatorOnboardingEmail(creator);
+      if (res.success) {
+        if (res.warning) {
+          showToast(res.warning, 'info');
+        } else {
+          showToast(`Onboarding invite email sent to ${creator.email}!`, 'success');
+        }
+      } else {
+        showToast(res.error || 'Failed to send invite. Check server.', 'error');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Error sending invite', 'error');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   // Filter content assigned to this creator
   const assignedContent = content.filter((item) => item.creatorIds.includes(creator.id));
@@ -105,16 +132,41 @@ export const CreatorDetailModal: React.FC<CreatorDetailModalProps> = ({ creatorI
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {!creator.onboarded ? (
+              <button
+                type="button"
+                disabled={isSendingEmail}
+                onClick={handleSendInvite}
+                className="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30 active:scale-95 disabled:opacity-50 cursor-pointer"
+                title={`Send onboarding welcome email to ${creator.email || 'creator'}`}
+              >
+                {isSendingEmail ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" /> Send Invite Email
+                  </>
+                )}
+              </button>
+            ) : (
+              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded-xl text-xs font-semibold flex items-center gap-1">
+                <UserCheck className="w-3.5 h-3.5" /> Onboarded
+              </span>
+            )}
+
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Edit2 className="w-3.5 h-3.5" /> Edit Profile
             </button>
+            
             <span
-              className={`badge px-2.5 py-1 text-xs font-semibold ${
+              className={`badge px-2.5 py-1.5 text-xs font-semibold ${
                 creator.status === 'Active'
                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                   : 'bg-slate-800 text-gray-400'

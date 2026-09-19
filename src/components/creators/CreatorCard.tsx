@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Creator } from '../../types';
 import { useApp } from '../../context/AppContext';
+import { useUI } from '../../context/UIContext';
 import { CreatorAvatar } from '../common/CreatorAvatar';
-import { Phone, ChevronRight, Video, CheckCircle2, Clock, AtSign, Edit2 } from 'lucide-react';
+import { Phone, ChevronRight, Video, CheckCircle2, Clock, AtSign, Edit2, Mail, Loader2, UserCheck, AlertCircle } from 'lucide-react';
 
 interface CreatorCardProps {
   creator: Creator;
@@ -11,7 +12,9 @@ interface CreatorCardProps {
 }
 
 export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onEdit }) => {
-  const { content } = useApp();
+  const { content, sendCreatorOnboardingEmail } = useApp();
+  const { showToast } = useUI();
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
 
   // Derived content counts for this creator
   const assignedItems = content.filter((item) => item.creatorIds.includes(creator.id));
@@ -20,6 +23,32 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
   const pendingCount = assignedItems.filter(
     (item) => item.postStatus !== 'Posted' && item.postStatus !== 'Cancelled'
   ).length;
+
+  const handleSendInvite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!creator.email) {
+      showToast(`Cannot send invite: ${creator.name} has no email address.`, 'error');
+      return;
+    }
+
+    setIsSendingInvite(true);
+    try {
+      const res = await sendCreatorOnboardingEmail(creator);
+      if (res.success) {
+        if (res.warning) {
+          showToast(res.warning, 'info');
+        } else {
+          showToast(`Onboarding invite email sent to ${creator.email}!`, 'success');
+        }
+      } else {
+        showToast(res.error || 'Failed to send invite email. Check Resend settings.', 'error');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Error sending invite', 'error');
+    } finally {
+      setIsSendingInvite(false);
+    }
+  };
 
   return (
     <div
@@ -80,6 +109,43 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({ creator, onSelect, onE
         <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic break-words">
           "{creator.bio}"
         </p>
+      )}
+
+      {/* Onboarding Pending Action Banner */}
+      {!creator.onboarded ? (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center justify-between gap-2 px-2.5 py-2 bg-amber-500/10 border border-amber-500/25 rounded-xl transition-all"
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span className="text-[11px] font-medium text-amber-300 truncate">Onboarding Pending</span>
+          </div>
+          <button
+            type="button"
+            disabled={isSendingInvite}
+            onClick={handleSendInvite}
+            className="px-2.5 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shrink-0 shadow-sm shadow-indigo-600/30 active:scale-95 disabled:opacity-50 cursor-pointer"
+            title={`Send onboarding email to ${creator.email || 'creator'}`}
+          >
+            {isSendingInvite ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span>Sending...</span>
+              </>
+            ) : (
+              <>
+                <Mail className="w-3 h-3" />
+                <span>Send Email</span>
+              </>
+            )}
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1.5 text-[10px] text-emerald-400/90 font-medium px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg w-fit">
+          <UserCheck className="w-3 h-3 text-emerald-400" />
+          <span>Account Onboarded</span>
+        </div>
       )}
 
       {/* Content Counts Grid */}

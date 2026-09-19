@@ -78,6 +78,7 @@ export interface Creator {
   instagramId?: string;
   genre?: string;
   createdAt: string;
+  onboarded?: boolean;
 }
 
 export interface Category {

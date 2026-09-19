@@ -62,9 +62,10 @@ interface AppContextType {
   updateShootStatus: (id: string, status: ShootStatus) => Promise<void>;
   updatePostStatus: (id: string, status: PostStatus) => Promise<void>;
   
-  addCreator: (creator: Omit<Creator, 'id' | 'createdAt'>) => Promise<void>;
+  addCreator: (creator: Omit<Creator, 'id' | 'createdAt'>) => Promise<string | void>;
   updateCreator: (id: string, creator: Partial<Creator>) => Promise<void>;
   deleteCreator: (id: string) => Promise<void>;
+  sendCreatorOnboardingEmail: (creator: Creator) => Promise<{ success: boolean; error?: string; warning?: string }>;
   
   addStore: (store: Omit<Store, 'id' | 'createdAt'>) => Promise<void>;
   updateStore: (id: string, store: Partial<Store>) => Promise<void>;
@@ -292,10 +293,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Real DB Creator Actions
   const addCreator = async (creatorData: Omit<Creator, 'id' | 'createdAt'>) => {
-    await dbService.addCreator(creatorData);
+    const newId = await dbService.addCreator({
+      ...creatorData,
+      onboarded: creatorData.onboarded ?? false
+    });
     if (creatorData.email) {
-      emailService.sendWelcomeEmail(creatorData.email, creatorData.name);
+      emailService.sendWelcomeEmail(creatorData.email, creatorData.name).catch((err) => {
+        console.error('Failed to send onboarding welcome email:', err);
+      });
     }
+    return newId;
+  };
+
+  const sendCreatorOnboardingEmail = async (creator: Creator) => {
+    if (!creator.email) {
+      return { success: false, error: 'Creator does not have an email address' };
+    }
+    const result = await emailService.sendWelcomeEmail(creator.email, creator.name);
+    return result;
   };
 
   const updateCreator = async (id: string, updates: Partial<Creator>) => {
@@ -437,6 +452,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addCreator,
         updateCreator,
         deleteCreator,
+        sendCreatorOnboardingEmail,
         addStore,
         updateStore,
         addCategory,
