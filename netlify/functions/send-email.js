@@ -30,7 +30,7 @@ export default async (req) => {
   }
 
   const resend = new Resend(apiKey);
-  const fromAddress = process.env.RESEND_FROM || 'ReelFlow <onboarding@resend.dev>';
+  const fromAddress = process.env.RESEND_FROM || 'ReelFlow <noreply@aurexdigitals.in>';
 
   try {
     const body = await req.json();

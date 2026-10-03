@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const fromAddress = process.env.RESEND_FROM || 'ReelFlow <onboarding@resend.dev>';
+const fromAddress = process.env.RESEND_FROM || 'ReelFlow <noreply@aurexdigitals.in>';
 
 app.post('/api/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
@@ -27,26 +27,28 @@ app.post('/api/send-email', async (req, res) => {
       html,
     });
 
-    // If Resend throws 403 sandbox error because recipient domain is not verified,
-    // redirect test email to account owner aurexdigitallabs@gmail.com
+    // If Resend throws a sandbox error (e.g., unverified domain), redirect only in non-production environments
     if (error && (error.statusCode === 403 || error.name === 'validation_error' || error.message?.includes('testing emails'))) {
-      console.warn(`[Resend Sandbox] Cannot send to ${to} with unverified domain. Redirecting test email to aurexdigitallabs@gmail.com`);
-      const testResult = await resend.emails.send({
-        from: fromAddress,
-        to: 'aurexdigitallabs@gmail.com',
-        subject: `[Test for: ${to}] ${subject}`,
-        html,
-      });
-
-      if (!testResult.error) {
-        return res.status(200).json({
-          ...testResult.data,
-          deliveredTo: 'aurexdigitallabs@gmail.com',
-          warning: `Delivered to aurexdigitallabs@gmail.com in Resend test mode. To send directly to ${to}, verify your domain aurexdigitals.in at resend.com/domains.`
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[Resend Sandbox] Cannot send to ${to} with unverified domain. Redirecting test email to aurexdigitallabs@gmail.com`);
+        const testResult = await resend.emails.send({
+          from: fromAddress,
+          to: 'aurexdigitallabs@gmail.com',
+          subject: `[Test for: ${to}] ${subject}`,
+          html,
         });
+
+        if (!testResult.error) {
+          return res.status(200).json({
+            ...testResult.data,
+            deliveredTo: 'aurexdigitallabs@gmail.com',
+            warning: `Delivered to aurexdigitallabs@gmail.com in Resend test mode. To send directly to ${to}, verify your domain aurexdigitals.in at resend.com/domains.`,
+          });
+        }
+        error = testResult.error;
       }
-      error = testResult.error;
     }
+
 
     if (error) {
       console.error('Resend API Error:', error);

@@ -13,6 +13,13 @@ export interface SendEmailResult {
   warning?: string;
 }
 
+const getBaseAppUrl = () => {
+  if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')) {
+    return window.location.origin;
+  }
+  return 'https://reelflow.aurexdigitals.in';
+};
+
 class EmailService {
   private async sendEmail(to: string, subject: string, html: string): Promise<SendEmailResult> {
     const endpoint = getApiEndpoint();
@@ -64,22 +71,26 @@ class EmailService {
   }
 
   async sendWelcomeEmail(to: string, creatorName: string): Promise<SendEmailResult> {
-    const html = getWelcomeEmail(creatorName, 'https://reelflow.aurexdigitals.in/login');
+    const baseUrl = getBaseAppUrl();
+    const html = getWelcomeEmail(creatorName, `${baseUrl}/login`);
     return await this.sendEmail(to, 'Welcome to ReelFlow - Creator Onboarding', html);
   }
 
   async sendBrandAdminWelcomeEmail(to: string, adminName: string, storeNames: string[]): Promise<SendEmailResult> {
-    const html = getBrandAdminWelcomeEmail(adminName, storeNames, 'https://reelflow.aurexdigitals.in/login');
+    const baseUrl = getBaseAppUrl();
+    const html = getBrandAdminWelcomeEmail(adminName, storeNames, `${baseUrl}/login`);
     return await this.sendEmail(to, 'Welcome to ReelFlow - Brand Admin Access', html);
   }
 
   async sendTaskAssignedEmail(to: string, creatorName: string, taskTitle: string, dueDate: string): Promise<SendEmailResult> {
-    const html = getTaskAssignedEmail(creatorName, taskTitle, dueDate, 'https://reelflow.aurexdigitals.in/dashboard');
+    const baseUrl = getBaseAppUrl();
+    const html = getTaskAssignedEmail(creatorName, taskTitle, dueDate, `${baseUrl}/dashboard`);
     return await this.sendEmail(to, 'New Task Assigned: ' + taskTitle, html);
   }
 
   async sendStatusUpdatedEmail(to: string, creatorName: string, taskTitle: string, newStatus: string): Promise<SendEmailResult> {
-    const html = getStatusUpdatedEmail(creatorName, taskTitle, newStatus, 'https://reelflow.aurexdigitals.in/dashboard');
+    const baseUrl = getBaseAppUrl();
+    const html = getStatusUpdatedEmail(creatorName, taskTitle, newStatus, `${baseUrl}/dashboard`);
     return await this.sendEmail(to, `Task Update: ${taskTitle} is now ${newStatus}`, html);
   }
 }

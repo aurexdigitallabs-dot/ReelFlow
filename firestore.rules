@@ -68,6 +68,15 @@ service cloud.firestore {
       allow create, update, delete: if isAdminOrSuper();
     }
 
+      // =======================================================
+      // 6. Brand Admins Collection: brandAdmins/{adminId}
+      // =======================================================
+      match /brand_admins/{adminId} {
+        allow read: if isAuthenticated();
+        // Only Admins or Super Admins can create, update, delete brand admin entries
+        allow create, update, delete: if isAdminOrSuper();
+      }
+
     // =======================================================
     // 4. Categories Collection: categories/{catId}
     // =======================================================
